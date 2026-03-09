@@ -51,6 +51,10 @@ gcc -Wall -Wextra -pedantic "ruta/al/archivo.c" -o programa
   - `hecho en clase/` para avances de cursada.
 - Alcance inicial: **C bare-metal** (RTOS se evaluara mas adelante).
 
+## Historial de cambios
+
+- Ver [CHANGELOG.md](CHANGELOG.md) para el detalle de cambios realizados.
+
 ---
 
 Siguiente paso recomendado: crear en `codex-made/` un proyecto base LPC1769 con plantilla minima (`main.c`, startup/linker y guia de compilacion/debug).
