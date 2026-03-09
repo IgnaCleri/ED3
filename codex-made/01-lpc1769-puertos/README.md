@@ -4,14 +4,19 @@ Proyecto inicial de practica para ED3: configuracion y uso basico de puertos del
 
 ## Que hace este ejemplo
 
-- Configura 2 pines como salida GPIO:
-  - `P1.18` como LED principal (toggle por software).
-  - `P1.20` como LED de estado de entrada.
-- Configura 1 pin como entrada GPIO:
-  - `P0.15` como entrada digital (pulsador o señal externa).
+- Configura salidas GPIO en Puerto 1:
+  - `P1.18` como salida **push-pull** (blink).
+  - `P1.20` como LED de estado.
+  - `P1.19` como salida **open-drain**.
+- Configura entradas GPIO en Puerto 0:
+  - `P0.15` con modo **pull-up**.
+  - `P0.16` con modo **pull-down**.
+  - `P0.17` con modo **repeater**.
+  - `P0.18` con modo **sin pull-up/pull-down** (tristate).
 - En el loop principal:
   - Hace blink en `P1.18`.
-  - Lee `P0.15` y refleja su estado en `P1.20`.
+  - Conmuta `P1.19` mostrando comportamiento open-drain.
+  - Lee las 4 entradas y refleja estado consolidado en `P1.20`.
 
 ## Archivo principal
 
@@ -19,7 +24,7 @@ Proyecto inicial de practica para ED3: configuracion y uso basico de puertos del
 
 ## Importante
 
-Los pines elegidos son de ejemplo. Si tu placa usa otros pines para LED/boton, cambia solo los `#define` al inicio de `main.c`.
+Los pines elegidos son de ejemplo. Si tu placa usa otros pines para LED/boton, cambia los `#define` al inicio de `main.c`.
 
 ## Siguiente practica sugerida
 
