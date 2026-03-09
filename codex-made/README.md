@@ -24,3 +24,8 @@ Cada carpeta de proyecto deberia incluir:
 ## Nota de compatibilidad
 
 El debug se realizara con MCUXpresso IDE. La organizacion de archivos se mantiene simple para facilitar importar el proyecto al IDE cuando sea necesario.
+
+## Referencia documental
+
+La documentacion formal del LPC1769 en formato LaTeX se mantiene en `documentacion latex/`.
+Esta carpeta (`codex-made/`) se reserva para practicas y prototipos de codigo.

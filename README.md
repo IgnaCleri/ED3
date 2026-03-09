@@ -15,6 +15,7 @@ Espacio de trabajo para la materia Electronica Digital 3, orientado al desarroll
 - `tps/`: espacio para trabajos practicos.
 - `hecho en clase/`: ejercicios y avances de cursada.
 - `codex-made/`: material generado durante las sesiones de trabajo.
+- `documentacion latex/`: informe tecnico LPC1769 en LaTeX (fuentes, figuras y script de extraccion).
 - `.vscode/`: configuraciones locales del editor.
 
 ## Convencion para nuevos ejercicios
@@ -50,6 +51,29 @@ gcc -Wall -Wextra -pedantic "ruta/al/archivo.c" -o programa
   - `tps/` para trabajos practicos.
   - `hecho en clase/` para avances de cursada.
 - Alcance inicial: **C bare-metal** (RTOS se evaluara mas adelante).
+
+## Flujo de documentacion tecnica (LPC1769)
+
+1. Extraer y recortar figuras desde el datasheet:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "documentacion latex/scripts/extract_figures_from_datasheet.ps1" -WorkspaceRoot "."
+```
+
+2. Compilar el informe:
+
+```powershell
+pdflatex -interaction=nonstopmode -output-directory "documentacion latex" "documentacion latex/main.tex"
+```
+
+La trazabilidad de figuras se mantiene en `documentacion latex/figure_inventory.csv`.
+
+## Politica de versionado para LaTeX (desde 2026-03-09)
+
+- Se prioriza versionar **fuentes reproducibles y assets**.
+- Se versionan: `main.tex`, `README.md`, `scripts/`, `images/`, `figure_inventory.csv`.
+- `main.pdf` solo se versiona cuando corresponde a una entrega.
+- No se versionan artefactos intermedios (`*.aux`, `*.log`, `*.toc`), previews/verificaciones ni temporales de `tmp/`.
 
 ## Historial de cambios
 
