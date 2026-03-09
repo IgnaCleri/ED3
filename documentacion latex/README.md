@@ -26,6 +26,28 @@ powershell -ExecutionPolicy Bypass -File "documentacion latex/scripts/extract_fi
   - figuras 2 y 4 legibles en zoom normal,
   - tablas APB sin celdas ambiguas.
 
+## Que se versiona / que no se versiona (politica desde 2026-03-09)
+
+Se versiona:
+- `main.tex`
+- `README.md`
+- `scripts/`
+- `images/`
+- `figure_inventory.csv`
+- `main.pdf` solo cuando corresponde a una entrega.
+
+No se versiona:
+- `tmp/`
+- `*.aux`, `*.log`, `*.toc`
+- previews y verificaciones intermedias (imagenes de control visual)
+- conversaciones de tooling (`conversations/*.json`)
+
+## Checklist de regeneracion
+
+1. Ejecutar la extracción de figuras desde `datasheet/` con el script de `scripts/`.
+2. Compilar `main.tex` con `pdflatex`.
+3. Revisar legibilidad visual del `main.pdf` antes de publicar/entregar.
+
 ## Nota de numeración
 
 Se mantienen saltos de numeración porque el documento sigue la estructura del datasheet original.
