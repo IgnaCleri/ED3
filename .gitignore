@@ -1,0 +1,9 @@
+.vscode/
+tmp/
+
+documentacion latex/**
+!documentacion latex/README.md
+!documentacion latex/main.tex
+!documentacion latex/main.pdf
+!documentacion latex/images/
+!documentacion latex/images/**
