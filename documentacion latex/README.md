@@ -6,14 +6,18 @@ Este documento resume el proceso actual para estudiar una seccion del datasheet,
 
 1. Leer la seccion objetivo en `datasheet/lpc17xx_um_unlocked.pdf` y `datasheet/lpc17xx_um_unlocked.txt`.
 2. Explicar y discutir el contenido primero en chat.
-3. Volcar al LaTeX solo la version acordada:
+3. Si el usuario pide un capitulo completo, reconstruir primero su estructura y recorrerlo por subseccion o bloque.
+4. Explicar una subseccion o bloque por vez y abrir checkpoint de dudas antes de pasar al siguiente.
+5. No editar LaTeX hasta terminar la discusion del bloque o conjunto de bloques acordado.
+6. Antes de escribir, respetar el criterio editorial vigente del documento.
+7. Volcar al LaTeX solo la version acordada:
    - estilo de consulta rapida,
    - datos frios y tablas como fuente principal,
    - minima narrativa dentro de `main.tex`.
-4. Si hace falta una figura, extraerla desde el PDF fuente con recorte dedicado.
-5. Registrar la trazabilidad de la figura en `figure_inventory.csv`.
-6. Compilar `main.tex`.
-7. Renderizar paginas afectadas del PDF a PNG y revisar legibilidad real.
+8. Si hace falta una figura, extraerla desde el PDF fuente con recorte dedicado.
+9. Registrar la trazabilidad de la figura en `figure_inventory.csv`.
+10. Compilar `main.tex`.
+11. Renderizar paginas afectadas del PDF a PNG y revisar legibilidad real.
 
 ## Criterios editoriales vigentes
 
@@ -29,6 +33,7 @@ Este documento resume el proceso actual para estudiar una seccion del datasheet,
 
 - No reutilizar capturas de pagina completas cuando la figura queda chica o pierde contraste.
 - Preferir recortes dedicados en alta resolucion desde el PDF fuente.
+- Si ya existe un recorte HD validado para esa figura, reutilizarlo antes de generar uno nuevo.
 - Guardar la figura final en `documentacion latex/images/`.
 - Registrar coordenadas y DPI en `documentacion latex/figure_inventory.csv`.
 
@@ -81,16 +86,17 @@ Confirmar siempre:
 ## Que se versiona / que no se versiona
 
 Se versiona:
-- `main.tex`
 - `README.md`
-- `scripts/`
+- `main.tex`
 - `images/`
-- `figure_inventory.csv`
 - `main.pdf` cuando corresponde a una entrega
 
 No se versiona:
+- `.vscode/`
 - `tmp/`
 - `*.aux`, `*.log`, `*.toc`, `*.out`
+- `figure_inventory.csv`
+- `scripts/`
 - previews y verificaciones intermedias
 - conversaciones de tooling (`conversations/*.json`)
 
