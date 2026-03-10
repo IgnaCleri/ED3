@@ -1,5 +1,0 @@
-﻿"section","datasheet_page","source_figure","dpi","crop_x","crop_y","crop_w","crop_h","output_file"
-"1.5 Diagrama de bloques","8","Fig 1. LPC1768 simplified block diagram","300","220","360","2140","2600","images/lpc1769_block_diagram.png"
-"1.6 Vista general de arquitectura","11","Fig 2. LPC1768 block diagram, CPU and buses","300","220","360","2000","2570","images/lpc1769_ahb_matrix_detailed.png"
-"2.2 Mapa de memoria","13","Fig 3. LPC17xx system memory map","300","190","120","2920","2320","images/lpc17xx_system_memory_map.png"
-"7.1 Configuración de pines LPC17xx","92","Fig 16. Pin configuration TFBGA100 package","300","610","370","1340","980","images/lpc17xx_pin_configuration_tfbga100.png"

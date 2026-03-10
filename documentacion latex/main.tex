@@ -2,13 +2,16 @@
 \usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{multirow}
 \usepackage{array}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{enumitem}
+\usepackage[unicode,hidelinks]{hyperref}
 
 \setlist[itemize]{itemsep=0.35em, topsep=0.35em}
 
@@ -226,8 +229,311 @@ El LPC17xx genera una \textbf{excepción de fallo de bus} cuando un programa int
 \subsection{Configuración de pines LPC17xx}
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.93\textwidth]{images/lpc17xx_pin_configuration_tfbga100.png}
-  \caption{Configuración de pines TFBGA100 del LPC176x.}
+  \includegraphics[width=0.94\textwidth]{images/lpc176x_lqfp100_pin_configuration_hd.png}
+  \caption{Configuración de pines LQFP100 del LPC176x.}
 \end{figure}
+
+\begin{itemize}
+  \item \textbf{Encapsulado de referencia:} en esta sección se usa la numeración \textbf{LQFP100}.
+  \item \textbf{I/O digitales:} los pines digitales son \textit{5 V tolerant} y disponen de \textit{input hysteresis}, salvo indicación contraria en la descripción puntual.
+  \item \textbf{Pines no tolerantes a 5 V:} cristal, alimentación, referencias analógicas y cualquier pin usado como entrada ADC.
+  \item \textbf{Multiplexación:} cada pin puede exponer GPIO o funciones alternativas; la selección efectiva se realiza en el \textit{pin connect block}.
+\end{itemize}
+
+\subsubsection{Resumen de puertos}
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Perfil funcional de los puertos disponibles}
+  \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Puerto} & \textbf{Uso principal} \\
+    \hline
+    Port 0 & UART0/1/2/3, I2C1/2, SSP0/1, SPI, I2S, CAN1/2, ADC, DAC y USB. \\
+    \hline
+    Port 1 & Ethernet, PWM1, motor control PWM, capturas/match, USB auxiliar y ADC. \\
+    \hline
+    Port 2 & PWM1, UART1/2, CAN2, interrupciones externas EINT0--EINT3, NMI, trace y eventos externos. \\
+    \hline
+    Port 3 & Señales puntuales de timer y PWM. \\
+    \hline
+    Port 4 & I2S master clock, Timer 2 match y UART3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsubsection{Descripción de pines LPC17xx}
+\noindent\textbf{Port 0.} Puerto GPIO de 32 bits con control de dirección individual. No están disponibles \texttt{P0[12]}, \texttt{P0[13]}, \texttt{P0[14]} y \texttt{P0[31]}.
+
+\small
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTpre}{0pt}
+\setlength{\LTpost}{8pt}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.25\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.48\textwidth}|}
+\caption{Port 0, encapsulado LQFP100}\\
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+P0[0] / RD1 / TXD3 / SDA1 & 46 & I/O & GPIO general. Funciones alternativas: receptor CAN1, transmisión UART3 e I2C1 SDA. \\
+\hline
+P0[1] / TD1 / RXD3 / SCL1 & 47 & I/O & GPIO general. Funciones alternativas: transmisión CAN1, recepción UART3 e I2C1 SCL. \\
+\hline
+P0[2] / TXD0 / AD0[7] & 98 & I/O & GPIO general, transmisión UART0 o entrada ADC canal 7. En modo ADC se deshabilita la sección digital del pad. \\
+\hline
+P0[3] / RXD0 / AD0[6] & 99 & I/O & GPIO general, recepción UART0 o entrada ADC canal 6. En modo ADC se deshabilita la sección digital del pad. \\
+\hline
+P0[4] / I2SRX\_CLK / RD2 / CAP2[0] & 81 & I/O & GPIO general. Puede operar como reloj de recepción I2S, receptor CAN2 o captura Timer 2 canal 0. \\
+\hline
+P0[5] / I2SRX\_WS / TD2 / CAP2[1] & 80 & I/O & GPIO general. Puede operar como \textit{word select} de recepción I2S, transmisión CAN2 o captura Timer 2 canal 1. \\
+\hline
+P0[6] / I2SRX\_SDA / SSEL1 / MAT2[0] & 79 & I/O & GPIO general. Puede operar como dato I2S RX, selección de esclavo SSP1 o match Timer 2 canal 0. \\
+\hline
+P0[7] / I2STX\_CLK / SCK1 / MAT2[1] & 78 & I/O & GPIO general. Puede operar como reloj I2S TX, clock SSP1 o match Timer 2 canal 1. \\
+\hline
+P0[8] / I2STX\_WS / MISO1 / MAT2[2] & 77 & I/O & GPIO general. Puede operar como \textit{word select} I2S TX, MISO de SSP1 o match Timer 2 canal 2. \\
+\hline
+P0[9] / I2STX\_SDA / MOSI1 / MAT2[3] & 76 & I/O & GPIO general. Puede operar como dato I2S TX, MOSI de SSP1 o match Timer 2 canal 3. \\
+\hline
+P0[10] / TXD2 / SDA2 / MAT3[0] & 48 & I/O & GPIO general. Puede operar como transmisión UART2, I2C2 SDA o match Timer 3 canal 0. \\
+\hline
+P0[11] / RXD2 / SCL2 / MAT3[1] & 49 & I/O & GPIO general. Puede operar como recepción UART2, I2C2 SCL o match Timer 3 canal 1. \\
+\hline
+P0[15] / TXD1 / SCK0 / SCK & 62 & I/O & GPIO general. Puede operar como transmisión UART1, clock SSP0 o clock SPI. \\
+\hline
+P0[16] / RXD1 / SSEL0 / SSEL & 63 & I/O & GPIO general. Puede operar como recepción UART1, selección SSP0 o selección SPI. \\
+\hline
+P0[17] / CTS1 / MISO0 / MISO & 61 & I/O & GPIO general. Puede operar como \textit{clear-to-send} UART1, MISO de SSP0 o MISO de SPI. \\
+\hline
+P0[18] / DCD1 / MOSI0 / MOSI & 60 & I/O & GPIO general. Puede operar como \textit{data carrier detect} UART1, MOSI de SSP0 o MOSI de SPI. \\
+\hline
+P0[19] / DSR1 / SDA1 & 59 & I/O & GPIO general. Puede operar como \textit{data set ready} UART1 o I2C1 SDA. \\
+\hline
+P0[20] / DTR1 / SCL1 & 58 & I/O & GPIO general. Puede operar como \textit{data terminal ready} UART1 o I2C1 SCL; puede usarse como habilitación RS-485. \\
+\hline
+P0[21] / RI1 / RD1 & 57 & I/O & GPIO general. Puede operar como \textit{ring indicator} UART1 o receptor CAN1. \\
+\hline
+P0[22] / RTS1 / TD1 & 56 & I/O & GPIO general. Puede operar como \textit{request to send} UART1 o transmisión CAN1; puede usarse como habilitación RS-485. \\
+\hline
+P0[23] / AD0[0] / I2SRX\_CLK / CAP3[0] & 9 & I/O & GPIO general, ADC canal 0, reloj I2S RX o captura Timer 3 canal 0. En modo ADC se deshabilita la sección digital. \\
+\hline
+P0[24] / AD0[1] / I2SRX\_WS / CAP3[1] & 8 & I/O & GPIO general, ADC canal 1, \textit{word select} I2S RX o captura Timer 3 canal 1. En modo ADC se deshabilita la sección digital. \\
+\hline
+P0[25] / AD0[2] / I2SRX\_SDA / TXD3 & 7 & I/O & GPIO general, ADC canal 2, dato I2S RX o transmisión UART3. En modo ADC se deshabilita la sección digital. \\
+\hline
+P0[26] / AD0[3] / AOUT / RXD3 & 6 & I/O & GPIO general, ADC canal 3, salida DAC o recepción UART3. En modo ADC/DAC se deshabilita la sección digital. \\
+\hline
+P0[27] / SDA0 / USB\_SDA & 25 & I/O & GPIO general con pad I2C0 especializado, \textit{open-drain}, tolerante a 5 V y compatible con Standard/Fast/Fast Mode Plus. Requiere \textit{pull-up} externo. \\
+\hline
+P0[28] / SCL0 / USB\_SCL & 24 & I/O & GPIO general con pad I2C0 especializado, \textit{open-drain}, tolerante a 5 V y compatible con Standard/Fast/Fast Mode Plus. Requiere \textit{pull-up} externo. \\
+\hline
+P0[29] / USB\_D+ & 29 & I/O & GPIO general o línea bidireccional USB D+. Pad diseñado según USB 2.0 Full-speed/Low-speed. \\
+\hline
+P0[30] / USB\_D- & 30 & I/O & GPIO general o línea bidireccional USB D-. Pad diseñado según USB 2.0 Full-speed/Low-speed. \\
+\hline
+\end{longtable}
+
+\noindent\textbf{Port 1.} Puerto GPIO de 32 bits con control de dirección individual. No están disponibles \texttt{P1[2]}, \texttt{P1[3]}, \texttt{P1[5]}, \texttt{P1[6]}, \texttt{P1[7]}, \texttt{P1[11]}, \texttt{P1[12]} y \texttt{P1[13]}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.25\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.48\textwidth}|}
+\caption{Port 1, encapsulado LQFP100}\\
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+P1[0] / ENET\_TXD0 & 95 & I/O & GPIO general o dato de transmisión Ethernet bit 0. \\
+\hline
+P1[1] / ENET\_TXD1 & 94 & I/O & GPIO general o dato de transmisión Ethernet bit 1. \\
+\hline
+P1[4] / ENET\_TX\_EN & 93 & I/O & GPIO general o habilitación de transmisión Ethernet. \\
+\hline
+P1[8] / ENET\_CRS & 92 & I/O & GPIO general o señal \textit{carrier sense} Ethernet. \\
+\hline
+P1[9] / ENET\_RXD0 & 91 & I/O & GPIO general o dato de recepción Ethernet bit 0. \\
+\hline
+P1[10] / ENET\_RXD1 & 90 & I/O & GPIO general o dato de recepción Ethernet bit 1. \\
+\hline
+P1[14] / ENET\_RX\_ER & 89 & I/O & GPIO general o error de recepción Ethernet. \\
+\hline
+P1[15] / ENET\_REF\_CLK & 88 & I/O & GPIO general o reloj de referencia Ethernet. \\
+\hline
+P1[16] / ENET\_MDC & 87 & I/O & GPIO general o clock MIIM Ethernet. \\
+\hline
+P1[17] / ENET\_MDIO & 86 & I/O & GPIO general o línea MIIM de datos Ethernet. \\
+\hline
+P1[18] / USB\_UP\_LED / PWM1[1] / CAP1[0] & 32 & I/O & GPIO general. Puede operar como LED de estado USB, salida PWM1 canal 1 o captura Timer 1 canal 0. \\
+\hline
+P1[19] / MCOA0 / USB\_PPWR / CAP1[1] & 33 & I/O & GPIO general. Puede operar como salida A del motor control PWM canal 0, habilitación de potencia USB o captura Timer 1 canal 1. \\
+\hline
+P1[20] / MCI0 / PWM1[2] / SCK0 & 34 & I/O & GPIO general. Puede operar como entrada motor control PWM/QEI PHA, PWM1 canal 2 o clock SSP0. \\
+\hline
+P1[21] / MCABORT / PWM1[3] / SSEL0 & 35 & I/O & GPIO general. Puede operar como aborto rápido del motor control PWM, PWM1 canal 3 o selección SSP0. \\
+\hline
+P1[22] / MCOB0 / USB\_PWRD / MAT1[0] & 36 & I/O & GPIO general. Puede operar como salida B del motor control PWM canal 0, estado de potencia USB o match Timer 1 canal 0. \\
+\hline
+P1[23] / MCI1 / PWM1[4] / MISO0 & 37 & I/O & GPIO general. Puede operar como entrada motor control PWM/QEI PHB, PWM1 canal 4 o MISO SSP0. \\
+\hline
+P1[24] / MCI2 / PWM1[5] / MOSI0 & 38 & I/O & GPIO general. Puede operar como entrada motor control PWM/QEI INDEX, PWM1 canal 5 o MOSI SSP0. \\
+\hline
+P1[25] / MCOA1 / MAT1[1] & 39 & I/O & GPIO general. Puede operar como salida A del motor control PWM canal 1 o match Timer 1 canal 1. \\
+\hline
+P1[26] / MCOB1 / PWM1[6] / CAP0[0] & 40 & I/O & GPIO general. Puede operar como salida B del motor control PWM canal 1, PWM1 canal 6 o captura Timer 0 canal 0. \\
+\hline
+P1[27] / CLKOUT / USB\_OVRCR / CAP0[1] & 43 & I/O & GPIO general. Puede operar como salida de clock, sobrecorriente USB o captura Timer 0 canal 1. \\
+\hline
+P1[28] / MCOA2 / PCAP1[0] / MAT0[0] & 44 & I/O & GPIO general. Puede operar como salida A del motor control PWM canal 2, captura PWM1 canal 0 o match Timer 0 canal 0. \\
+\hline
+P1[29] / MCOB2 / PCAP1[1] / MAT0[1] & 45 & I/O & GPIO general. Puede operar como salida B del motor control PWM canal 2, captura PWM1 canal 1 o match Timer 0 canal 1. \\
+\hline
+P1[30] / VBUS / AD0[4] & 21 & I/O & GPIO general o ADC canal 4. También monitorea presencia de alimentación USB; la señal debe estar en HIGH para que ocurra reset USB. \\
+\hline
+P1[31] / SCK1 / AD0[5] & 20 & I/O & GPIO general, clock SSP1 o ADC canal 5. En modo ADC se deshabilita la sección digital. \\
+\hline
+\end{longtable}
+
+\noindent\textbf{Port 2.} Puerto GPIO de 32 bits con control de dirección individual. No están disponibles \texttt{P2[14]} a \texttt{P2[31]}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.25\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.48\textwidth}|}
+\caption{Port 2, encapsulado LQFP100}\\
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+P2[0] / PWM1[1] / TXD1 & 73 & I/O & GPIO general, PWM1 canal 1 o transmisión UART1. \\
+\hline
+P2[1] / PWM1[2] / RXD1 & 74 & I/O & GPIO general, PWM1 canal 2 o recepción UART1. \\
+\hline
+P2[2] / PWM1[3] / CTS1 / TRACEDATA[3] & 75 & I/O & GPIO general, PWM1 canal 3, \textit{clear-to-send} UART1 o dato de traza bit 3. \\
+\hline
+P2[3] / PWM1[4] / DCD1 / TRACEDATA[2] & 76 & I/O & GPIO general, PWM1 canal 4, \textit{data carrier detect} UART1 o dato de traza bit 2. \\
+\hline
+P2[4] / PWM1[5] / DSR1 / TRACEDATA[1] & 69 & I/O & GPIO general, PWM1 canal 5, \textit{data set ready} UART1 o dato de traza bit 1. \\
+\hline
+P2[5] / PWM1[6] / DTR1 / TRACEDATA[0] & 68 & I/O & GPIO general, PWM1 canal 6, \textit{data terminal ready} UART1 o dato de traza bit 0. \\
+\hline
+P2[6] / PCAP1[0] / RI1 / TRACECLK & 67 & I/O & GPIO general, captura PWM1 canal 0, \textit{ring indicator} UART1 o clock de traza. \\
+\hline
+P2[7] / RD2 / RTS1 & 66 & I/O & GPIO general, receptor CAN2 o \textit{request to send} UART1. \\
+\hline
+P2[8] / TD2 / TXD2 / ENET\_MDC & 65 & I/O & GPIO general, transmisión CAN2, transmisión UART2 o clock MIIM Ethernet. \\
+\hline
+P2[9] / USB\_CONNECT / RXD2 / ENET\_MDIO & 64 & I/O & GPIO general, control SoftConnect USB, recepción UART2 o línea MIIM Ethernet. \\
+\hline
+P2[10] / EINT0 / NMI & 53 & I/O & GPIO general con pad tolerante a 5 V y filtro de glitch de 5 ns. Puede operar como interrupción externa 0 o NMI. LOW junto con RESET fuerza modo ISP. \\
+\hline
+P2[11] / EINT1 / I2STX\_CLK & 52 & I/O & GPIO general con pad tolerante a 5 V y filtro de glitch de 5 ns. Puede operar como interrupción externa 1 o reloj I2S TX. \\
+\hline
+P2[12] / EINT2 / I2STX\_WS & 51 & I/O & GPIO general con pad tolerante a 5 V y filtro de glitch de 5 ns. Puede operar como interrupción externa 2 o \textit{word select} I2S TX. \\
+\hline
+P2[13] / EINT3 / I2STX\_SDA & 50 & I/O & GPIO general con pad tolerante a 5 V y filtro de glitch de 5 ns. Puede operar como interrupción externa 3 o dato I2S TX. \\
+\hline
+\end{longtable}
+
+\noindent\textbf{Port 3.} Puerto GPIO de 32 bits; no están disponibles \texttt{P3[0]} a \texttt{P3[24]} ni \texttt{P3[27]} a \texttt{P3[31]}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.25\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.48\textwidth}|}
+\caption{Port 3, encapsulado LQFP100}\\
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+P3[25] / MAT0[0] / PWM1[2] & 27 & I/O & GPIO general, match Timer 0 canal 0 o PWM1 canal 2. \\
+\hline
+P3[26] / STCLK / MAT0[1] / PWM1[3] & 26 & I/O & GPIO general, entrada de clock SysTick, match Timer 0 canal 1 o PWM1 canal 3. \\
+\hline
+\end{longtable}
+
+\noindent\textbf{Port 4.} Puerto GPIO de 32 bits; no están disponibles \texttt{P4[0]} a \texttt{P4[27]}, \texttt{P4[30]} y \texttt{P4[31]}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.25\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.48\textwidth}|}
+\caption{Port 4, encapsulado LQFP100}\\
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Pin / funciones} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+P4[28] / RX\_MCLK / MAT2[0] / TXD3 & 82 & I/O & GPIO general, reloj maestro I2S RX, match Timer 2 canal 0 o transmisión UART3. \\
+\hline
+P4[29] / TX\_MCLK / MAT2[1] / RXD3 & 85 & I/O & GPIO general, reloj maestro I2S TX, match Timer 2 canal 1 o recepción UART3. \\
+\hline
+\end{longtable}
+
+\subsubsection{Señales de depuración, reset y alimentación}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.51\textwidth}|}
+\caption{Pines especiales del encapsulado LQFP100}\\
+\hline
+\textbf{Señal} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Señal} & \textbf{LQFP100} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+TDO / SWO & 1 & O & Salida JTAG TDO o salida Serial Wire Trace. \\
+\hline
+TDI & 2 & I & Entrada JTAG Test Data In. \\
+\hline
+TMS / SWDIO & 3 & I/O & Selección JTAG TMS o línea de datos Serial Wire Debug. \\
+\hline
+TRST & 4 & I & Reset de la interfaz JTAG. \\
+\hline
+TCK / SWDCLK & 5 & I & Clock JTAG o Serial Wire Debug. \\
+\hline
+RTCK & 100 & I/O & Señal de control de la interfaz JTAG. \\
+\hline
+RSTOUT & 14 & O & Salida de 3.3 V que indica estado de reset del dispositivo; refleja RESET y las fuentes internas de reset. \\
+\hline
+RESET & 17 & I & Entrada de reset externa. LOW reinicia el dispositivo, puertos y periféricos. Pad tolerante a 5 V con filtro de glitch de 20 ns, niveles TTL e histéresis. \\
+\hline
+XTAL1 & 22 & I & Entrada al oscilador principal y a los circuitos internos de generación de clock. \\
+\hline
+XTAL2 & 23 & O & Salida del amplificador del oscilador principal. \\
+\hline
+RTCX1 & 16 & I & Entrada del oscilador RTC. \\
+\hline
+RTCX2 & 18 & O & Salida del oscilador RTC. \\
+\hline
+VSS & 31, 41, 55, 72, 83, 97 & I & Referencia de tierra de 0 V. \\
+\hline
+VSSA & 11 & I & Tierra analógica; debe mantenerse al mismo potencial que VSS con aislamiento para reducir ruido. \\
+\hline
+VDD(3V3) & 28, 54, 71, 96 & I & Alimentación de 3.3 V para I/O y lógica fuera del dominio VBAT. \\
+\hline
+VDD(REG)(3V3) & 42, 84 & I & Alimentación de 3.3 V exclusiva del regulador interno. \\
+\hline
+VDDA & 10 & I & Alimentación analógica de 3.3 V para ADC y DAC; debe aislarse para minimizar ruido. \\
+\hline
+VREFP & 12 & I & Referencia positiva de ADC/DAC; nominalmente igual a VDDA y con aislamiento de ruido. \\
+\hline
+VREFN & 15 & I & Referencia negativa de ADC/DAC; nominalmente igual a VSS con aislamiento de ruido. \\
+\hline
+VBAT & 19 & I & Alimentación del dominio RTC. \\
+\hline
+n.c. & 13 & --- & Pin sin conexión interna funcional. \\
+\hline
+\end{longtable}
+
+\normalsize
 
 \end{document}
