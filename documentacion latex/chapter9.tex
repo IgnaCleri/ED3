@@ -1,0 +1,568 @@
+\setcounter{section}{8}
+\section{LPC17xx General Purpose Input/Output (GPIO)}
+
+\subsection{Configuración básica}
+\begin{itemize}
+  \item \textbf{Power:} el capítulo indica GPIO siempre habilitado.
+  \item \textbf{Pins:} el uso como GPIO depende de la selección de función realizada en la Sección 8.3.
+  \item \textbf{Wake-up:} los puertos 0 y 2 pueden participar en wake-up.
+  \item \textbf{Interrupts:} la habilitación por flanco se realiza con \texttt{IO0/2IntEnR} y \texttt{IO0/2IntEnF}; la IRQ se habilita además en el NVIC.
+\end{itemize}
+
+\subsection{Features}
+\subsubsection{Puertos digitales}
+\begin{itemize}
+  \item Registros GPIO ubicados sobre bus \textbf{AHB}, con acceso rápido.
+  \item Acceso por \textbf{byte}, \textbf{half-word} y \textbf{word}.
+  \item Escritura del puerto completo en una instrucción.
+  \item Registros separados de \texttt{SET} y \texttt{CLR}.
+  \item Acceso por \textbf{GPDMA}.
+  \item Soporte de \textbf{bit-banding} del Cortex-M3.
+  \item Control individual de dirección por bit.
+  \item Luego del reset, las E/S arrancan como entrada con \textit{pull-up}.
+\end{itemize}
+
+\paragraph{Nota técnica: bit-banding}
+El bit-banding permite tratar cada bit de una región bit-bandable como una palabra alias independiente. En práctica, evita secuencias explícitas de \textit{read-modify-write} para bits individuales. En GPIO sigue siendo natural preferir \texttt{FIOSET}/\texttt{FIOCLR} para salidas puntuales, pero el soporte de bit-banding simplifica accesos bit a bit sobre registros del periférico.
+
+\subsubsection{Puertos digitales con interrupción}
+\begin{itemize}
+  \item Solo \textbf{Port 0} y \textbf{Port 2} generan interrupciones GPIO por flanco.
+  \item Cada pin puede generar interrupción por flanco ascendente, descendente o ambos.
+  \item La detección es asíncrona, por lo que puede seguir operando sin clocks activos.
+  \item Cada interrupción habilitada puede contribuir a wake-up desde \textit{Power-down}.
+  \item \texttt{GPIO0} y \texttt{GPIO2} comparten posición NVIC con \texttt{EINT3}.
+\end{itemize}
+
+\subsection{Aplicaciones}
+\begin{itemize}
+  \item Entrada/salida digital de propósito general.
+  \item Manejo de LEDs e indicadores.
+  \item Control de dispositivos externos.
+  \item Sensado de entradas digitales y detección de flancos.
+  \item Salida de modos de bajo consumo.
+\end{itemize}
+
+\subsection{Descripción de pines}
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \setlength{\tabcolsep}{4pt}
+  \caption{GPIO pin description (Table 100)}
+  \begin{tabularx}{0.96\textwidth}{|>{\raggedright\arraybackslash}p{0.23\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Pin name} & \textbf{Type} & \textbf{Description} \\
+    \hline
+    \texttt{P0[30:0][1]} & Input/Output & GPIO de propósito general. Compartidos con funciones alternativas; no todos estarán disponibles en cada aplicación. \\
+    \hline
+    \texttt{P1[31:0][2]} & Input/Output & GPIO de propósito general. Compartidos con funciones alternativas; no todos estarán disponibles en cada aplicación. \\
+    \hline
+    \texttt{P2[13:0]} & Input/Output & GPIO de propósito general. \\
+    \hline
+    \texttt{P3[26:25]} & Input/Output & GPIO de propósito general. \\
+    \hline
+    \texttt{P4[29:28]} & Input/Output & GPIO de propósito general. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{[1]} \texttt{P0[14:12]} no disponibles.
+  \item \textbf{[2]} \texttt{P1[2]}, \texttt{P1[3]}, \texttt{P1[7:5]}, \texttt{P1[13:11]} no disponibles.
+  \item Algunos pines quedan condicionados por su función alternativa. En particular, los pines de \texttt{I2C0} son \textit{open-drain} cualquiera sea la función seleccionada.
+\end{itemize}
+
+\subsection{Descripción de registros}
+El bloque Fast GPIO implementa porciones de cinco puertos de 32 bits. Los registros \texttt{FIOx*} residen en \texttt{0x2009 C000} a \texttt{0x2009 C09C} sobre AHB. Los registros de interrupción GPIO residen en \texttt{0x4002 8080} a \texttt{0x4002 80B4}.
+
+\renewcommand{\arraystretch}{1.12}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.34\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.23\textwidth}|}
+\caption{GPIO register map (local bus accessible registers - enhanced GPIO features) (Table 101)} \\
+\hline
+\textbf{Name} & \textbf{Description} & \textbf{Access} & \textbf{Reset} & \textbf{PORTn Register Name \& Address} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{Description} & \textbf{Access} & \textbf{Reset} & \textbf{PORTn Register Name \& Address} \\
+\hline
+\endhead
+\texttt{FIODIR} & Control de dirección por bit del puerto. & R/W & 0 & \texttt{FIO0DIR - 0x2009 C000}, \texttt{FIO1DIR - 0x2009 C020}, \texttt{FIO2DIR - 0x2009 C040}, \texttt{FIO3DIR - 0x2009 C060}, \texttt{FIO4DIR - 0x2009 C080}. \\
+\hline
+\texttt{FIOMASK} & Máscara del puerto. Las lecturas y escrituras por \texttt{FIOPIN}, \texttt{FIOSET} y \texttt{FIOCLR} solo afectan bits habilitados por ceros en esta máscara. & R/W & 0 & \texttt{FIO0MASK - 0x2009 C010}, \texttt{FIO1MASK - 0x2009 C030}, \texttt{FIO2MASK - 0x2009 C050}, \texttt{FIO3MASK - 0x2009 C070}, \texttt{FIO4MASK - 0x2009 C090}. \\
+\hline
+\texttt{FIOPIN} & Valor del pin usando \texttt{FIOMASK}. Puede leerse independientemente de la dirección o de la función digital alternativa; al escribir, aplica valores sobre bits no enmascarados. & R/W & 0 & \texttt{FIO0PIN - 0x2009 C014}, \texttt{FIO1PIN - 0x2009 C034}, \texttt{FIO2PIN - 0x2009 C054}, \texttt{FIO3PIN - 0x2009 C074}, \texttt{FIO4PIN - 0x2009 C094}. \\
+\hline
+\texttt{FIOSET} & Fuerza niveles altos en pines de salida no enmascarados. Escribir \texttt{1} seta; escribir \texttt{0} no altera. & R/W & 0 & \texttt{FIO0SET - 0x2009 C018}, \texttt{FIO1SET - 0x2009 C038}, \texttt{FIO2SET - 0x2009 C058}, \texttt{FIO3SET - 0x2009 C078}, \texttt{FIO4SET - 0x2009 C098}. \\
+\hline
+\texttt{FIOCLR} & Fuerza niveles bajos en pines de salida no enmascarados. Escribir \texttt{1} limpia; escribir \texttt{0} no altera. & WO & 0 & \texttt{FIO0CLR - 0x2009 C01C}, \texttt{FIO1CLR - 0x2009 C03C}, \texttt{FIO2CLR - 0x2009 C05C}, \texttt{FIO3CLR - 0x2009 C07C}, \texttt{FIO4CLR - 0x2009 C09C}. \\
+\hline
+\end{longtable}
+
+\begin{table}[H]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \caption{GPIO interrupt register map (Table 102)}
+  \begin{tabularx}{0.96\textwidth}{|>{\raggedright\arraybackslash}p{0.24\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.11\textwidth}|>{\centering\arraybackslash}p{0.11\textwidth}|}
+    \hline
+    \textbf{Name} & \textbf{Description} & \textbf{Access} & \textbf{Reset} \\
+    \hline
+    \texttt{IO0IntEnR / IO2IntEnR} & GPIO Interrupt Enable for Rising edge. & R/W & 0 \\
+    \hline
+    \texttt{IO0IntEnF / IO2IntEnF} & GPIO Interrupt Enable for Falling edge. & R/W & 0 \\
+    \hline
+    \texttt{IO0IntStatR / IO2IntStatR} & GPIO Interrupt Status for Rising edge. & RO & 0 \\
+    \hline
+    \texttt{IO0IntStatF / IO2IntStatF} & GPIO Interrupt Status for Falling edge. & RO & 0 \\
+    \hline
+    \texttt{IO0IntClr / IO2IntClr} & GPIO Interrupt Clear. & WO & 0 \\
+    \hline
+    \texttt{IOIntStatus} & GPIO overall Interrupt Status. & RO & 0 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsubsection{GPIO port Direction register \texttt{FIOxDIR}}
+\begin{itemize}
+  \item Controla la dirección de los pines configurados como GPIO.
+  \item \texttt{0}: entrada.
+  \item \texttt{1}: salida.
+  \item \texttt{P0.29} y \texttt{P0.30} comparten pad con \texttt{USB\_D+} y \texttt{USB\_D-}.
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Fast GPIO port Direction register \texttt{FIO0DIR} to \texttt{FIO4DIR} (Table 103)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{31:0} & \texttt{FIOxDIR} & Bit 0 controla \texttt{Px.0}; bit 31 controla \texttt{Px.31}. \texttt{0}: pin configurado como entrada. \texttt{1}: pin configurado como salida. & \texttt{0x0} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.15\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\centering\arraybackslash}p{0.10\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\caption{Fast GPIO port Direction control byte and half-word accessible register description (Table 104)} \\
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endhead
+\texttt{FIOxDIR0} & Control de dirección para \texttt{Px.0} a \texttt{Px.7}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0DIR0 - 0x2009 C000}, \texttt{FIO1DIR0 - 0x2009 C020}, \texttt{FIO2DIR0 - 0x2009 C040}, \texttt{FIO3DIR0 - 0x2009 C060}, \texttt{FIO4DIR0 - 0x2009 C080}. \\
+\hline
+\texttt{FIOxDIR1} & Control de dirección para \texttt{Px.8} a \texttt{Px.15}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0DIR1 - 0x2009 C001}, \texttt{FIO1DIR1 - 0x2009 C021}, \texttt{FIO2DIR1 - 0x2009 C041}, \texttt{FIO3DIR1 - 0x2009 C061}, \texttt{FIO4DIR1 - 0x2009 C081}. \\
+\hline
+\texttt{FIOxDIR2} & Control de dirección para \texttt{Px.16} a \texttt{Px.23}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0DIR2 - 0x2009 C002}, \texttt{FIO1DIR2 - 0x2009 C022}, \texttt{FIO2DIR2 - 0x2009 C042}, \texttt{FIO3DIR2 - 0x2009 C062}, \texttt{FIO4DIR2 - 0x2009 C082}. \\
+\hline
+\texttt{FIOxDIR3} & Control de dirección para \texttt{Px.24} a \texttt{Px.31}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0DIR3 - 0x2009 C003}, \texttt{FIO1DIR3 - 0x2009 C023}, \texttt{FIO2DIR3 - 0x2009 C043}, \texttt{FIO3DIR3 - 0x2009 C063}, \texttt{FIO4DIR3 - 0x2009 C083}. \\
+\hline
+\texttt{FIOxDIRL} & Control de dirección para la mitad baja del puerto, \texttt{Px.0} a \texttt{Px.15}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0DIRL - 0x2009 C000}, \texttt{FIO1DIRL - 0x2009 C020}, \texttt{FIO2DIRL - 0x2009 C040}, \texttt{FIO3DIRL - 0x2009 C060}, \texttt{FIO4DIRL - 0x2009 C080}. \\
+\hline
+\texttt{FIOxDIRU} & Control de dirección para la mitad alta del puerto, \texttt{Px.16} a \texttt{Px.31}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0DIRU - 0x2009 C002}, \texttt{FIO1DIRU - 0x2009 C022}, \texttt{FIO2DIRU - 0x2009 C042}, \texttt{FIO3DIRU - 0x2009 C062}, \texttt{FIO4DIRU - 0x2009 C082}. \\
+\hline
+\end{longtable}
+
+\subsubsection{GPIO port output Set register \texttt{FIOxSET}}
+\begin{itemize}
+  \item Escribir \texttt{1} fuerza nivel alto sobre el pin de salida correspondiente.
+  \item Escribir \texttt{0} no altera el estado actual.
+  \item La operación queda condicionada por la máscara \texttt{FIOxMASK}.
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Fast GPIO port output Set register (Table 105)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{31:0} & \texttt{FIOxSET} & Bit 0 controla \texttt{Px.0}; bit 31 controla \texttt{Px.31}. \texttt{0}: salida sin cambios. \texttt{1}: salida forzada a HIGH. & \texttt{0x0} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.15\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\centering\arraybackslash}p{0.10\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\caption{Fast GPIO port output Set byte and half-word accessible register description (Table 106)} \\
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endhead
+\texttt{FIOxSET0} & Set de salida para \texttt{Px.0} a \texttt{Px.7}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0SET0 - 0x2009 C018}, \texttt{FIO1SET0 - 0x2009 C038}, \texttt{FIO2SET0 - 0x2009 C058}, \texttt{FIO3SET0 - 0x2009 C078}, \texttt{FIO4SET0 - 0x2009 C098}. \\
+\hline
+\texttt{FIOxSET1} & Set de salida para \texttt{Px.8} a \texttt{Px.15}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0SET1 - 0x2009 C019}, \texttt{FIO1SET1 - 0x2009 C039}, \texttt{FIO2SET1 - 0x2009 C059}, \texttt{FIO3SET1 - 0x2009 C079}, \texttt{FIO4SET1 - 0x2009 C099}. \\
+\hline
+\texttt{FIOxSET2} & Set de salida para \texttt{Px.16} a \texttt{Px.23}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0SET2 - 0x2009 C01A}, \texttt{FIO1SET2 - 0x2009 C03A}, \texttt{FIO2SET2 - 0x2009 C05A}, \texttt{FIO3SET2 - 0x2009 C07A}, \texttt{FIO4SET2 - 0x2009 C09A}. \\
+\hline
+\texttt{FIOxSET3} & Set de salida para \texttt{Px.24} a \texttt{Px.31}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0SET3 - 0x2009 C01B}, \texttt{FIO1SET3 - 0x2009 C03B}, \texttt{FIO2SET3 - 0x2009 C05B}, \texttt{FIO3SET3 - 0x2009 C07B}, \texttt{FIO4SET3 - 0x2009 C09B}. \\
+\hline
+\texttt{FIOxSETL} & Set de salida para \texttt{Px.0} a \texttt{Px.15}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0SETL - 0x2009 C018}, \texttt{FIO1SETL - 0x2009 C038}, \texttt{FIO2SETL - 0x2009 C058}, \texttt{FIO3SETL - 0x2009 C078}, \texttt{FIO4SETL - 0x2009 C098}. \\
+\hline
+\texttt{FIOxSETU} & Set de salida para \texttt{Px.16} a \texttt{Px.31}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0SETU - 0x2009 C01A}, \texttt{FIO1SETU - 0x2009 C03A}, \texttt{FIO2SETU - 0x2009 C05A}, \texttt{FIO3SETU - 0x2009 C07A}, \texttt{FIO4SETU - 0x2009 C09A}. \\
+\hline
+\end{longtable}
+
+\subsubsection{GPIO port output Clear register \texttt{FIOxCLR}}
+\begin{itemize}
+  \item Escribir \texttt{1} fuerza nivel bajo sobre el pin de salida correspondiente.
+  \item Escribir \texttt{0} no altera el estado actual.
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Fast GPIO port output Clear register (Table 107)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{31:0} & \texttt{FIOxCLR} & Bit 0 controla \texttt{Px.0}; bit 31 controla \texttt{Px.31}. \texttt{0}: salida sin cambios. \texttt{1}: salida forzada a LOW. & \texttt{0x0} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.15\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\centering\arraybackslash}p{0.10\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\caption{Fast GPIO port output Clear byte and half-word accessible register description (Table 108)} \\
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endhead
+\texttt{FIOxCLR0} & Clear de salida para \texttt{Px.0} a \texttt{Px.7}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0CLR0 - 0x2009 C01C}, \texttt{FIO1CLR0 - 0x2009 C03C}, \texttt{FIO2CLR0 - 0x2009 C05C}, \texttt{FIO3CLR0 - 0x2009 C07C}, \texttt{FIO4CLR0 - 0x2009 C09C}. \\
+\hline
+\texttt{FIOxCLR1} & Clear de salida para \texttt{Px.8} a \texttt{Px.15}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0CLR1 - 0x2009 C01D}, \texttt{FIO1CLR1 - 0x2009 C03D}, \texttt{FIO2CLR1 - 0x2009 C05D}, \texttt{FIO3CLR1 - 0x2009 C07D}, \texttt{FIO4CLR1 - 0x2009 C09D}. \\
+\hline
+\texttt{FIOxCLR2} & Clear de salida para \texttt{Px.16} a \texttt{Px.23}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0CLR2 - 0x2009 C01E}, \texttt{FIO1CLR2 - 0x2009 C03E}, \texttt{FIO2CLR2 - 0x2009 C05E}, \texttt{FIO3CLR2 - 0x2009 C07E}, \texttt{FIO4CLR2 - 0x2009 C09E}. \\
+\hline
+\texttt{FIOxCLR3} & Clear de salida para \texttt{Px.24} a \texttt{Px.31}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0CLR3 - 0x2009 C01F}, \texttt{FIO1CLR3 - 0x2009 C03F}, \texttt{FIO2CLR3 - 0x2009 C05F}, \texttt{FIO3CLR3 - 0x2009 C07F}, \texttt{FIO4CLR3 - 0x2009 C09F}. \\
+\hline
+\texttt{FIOxCLRL} & Clear de salida para \texttt{Px.0} a \texttt{Px.15}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0CLRL - 0x2009 C01C}, \texttt{FIO1CLRL - 0x2009 C03C}, \texttt{FIO2CLRL - 0x2009 C05C}, \texttt{FIO3CLRL - 0x2009 C07C}, \texttt{FIO4CLRL - 0x2009 C09C}. \\
+\hline
+\texttt{FIOxCLRU} & Clear de salida para \texttt{Px.16} a \texttt{Px.31}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0CLRU - 0x2009 C01E}, \texttt{FIO1CLRU - 0x2009 C03E}, \texttt{FIO2CLRU - 0x2009 C05E}, \texttt{FIO3CLRU - 0x2009 C07E}, \texttt{FIO4CLRU - 0x2009 C09E}. \\
+\hline
+\end{longtable}
+
+\subsubsection{GPIO port Pin value register \texttt{FIOxPIN}}
+\begin{itemize}
+  \item Permite leer el estado digital actual del pin, tanto si el pin está como entrada como si está como salida.
+  \item También puede escribir valores sobre bits no enmascarados.
+  \item Si se lee \texttt{FIOPIN}, los bits enmascarados con \texttt{1} en \texttt{FIOMASK} retornan \texttt{0} aun cuando el pin físico esté en otro estado.
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Fast GPIO port Pin value register (Table 109)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{31:0} & \texttt{FIOxPIN} & Valor del pin \texttt{Px.n}. La lectura refleja el estado digital actual. La escritura aplica el valor escrito sobre bits no enmascarados del puerto. & \texttt{0x0} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.15\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\centering\arraybackslash}p{0.10\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\caption{Fast GPIO port Pin value byte and half-word accessible register description (Table 110)} \\
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endhead
+\texttt{FIOxPIN0} & Valor del pin para \texttt{Px.0} a \texttt{Px.7}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0PIN0 - 0x2009 C014}, \texttt{FIO1PIN0 - 0x2009 C034}, \texttt{FIO2PIN0 - 0x2009 C054}, \texttt{FIO3PIN0 - 0x2009 C074}, \texttt{FIO4PIN0 - 0x2009 C094}. \\
+\hline
+\texttt{FIOxPIN1} & Valor del pin para \texttt{Px.8} a \texttt{Px.15}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0PIN1 - 0x2009 C015}, \texttt{FIO1PIN1 - 0x2009 C035}, \texttt{FIO2PIN1 - 0x2009 C055}, \texttt{FIO3PIN1 - 0x2009 C075}, \texttt{FIO4PIN1 - 0x2009 C095}. \\
+\hline
+\texttt{FIOxPIN2} & Valor del pin para \texttt{Px.16} a \texttt{Px.23}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0PIN2 - 0x2009 C016}, \texttt{FIO1PIN2 - 0x2009 C036}, \texttt{FIO2PIN2 - 0x2009 C056}, \texttt{FIO3PIN2 - 0x2009 C076}, \texttt{FIO4PIN2 - 0x2009 C096}. \\
+\hline
+\texttt{FIOxPIN3} & Valor del pin para \texttt{Px.24} a \texttt{Px.31}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0PIN3 - 0x2009 C017}, \texttt{FIO1PIN3 - 0x2009 C037}, \texttt{FIO2PIN3 - 0x2009 C057}, \texttt{FIO3PIN3 - 0x2009 C077}, \texttt{FIO4PIN3 - 0x2009 C097}. \\
+\hline
+\texttt{FIOxPINL} & Valor del pin para \texttt{Px.0} a \texttt{Px.15}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0PINL - 0x2009 C014}, \texttt{FIO1PINL - 0x2009 C034}, \texttt{FIO2PINL - 0x2009 C054}, \texttt{FIO3PINL - 0x2009 C074}, \texttt{FIO4PINL - 0x2009 C094}. \\
+\hline
+\texttt{FIOxPINU} & Valor del pin para \texttt{Px.16} a \texttt{Px.31}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0PINU - 0x2009 C016}, \texttt{FIO1PINU - 0x2009 C036}, \texttt{FIO2PINU - 0x2009 C056}, \texttt{FIO3PINU - 0x2009 C076}, \texttt{FIO4PINU - 0x2009 C096}. \\
+\hline
+\end{longtable}
+
+\subsubsection{Fast GPIO port Mask register \texttt{FIOxMASK}}
+\begin{itemize}
+  \item Selecciona qué bits participan en lecturas y escrituras del puerto.
+  \item \texttt{0}: bit habilitado.
+  \item \texttt{1}: bit enmascarado.
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Fast GPIO port Mask register (Table 111)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{31:0} & \texttt{FIOxMASK} & \texttt{0}: el bit físico participa de lecturas/escrituras. \texttt{1}: el bit queda enmascarado; lecturas retornan \texttt{0} y escrituras no alteran el pin. & \texttt{0x0} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.15\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\centering\arraybackslash}p{0.10\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\caption{Fast GPIO port Mask byte and half-word accessible register description (Table 112)} \\
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Generic register} & \textbf{Description} & \textbf{Length / Access} & \textbf{Reset} & \textbf{PORTn Register Address} \\
+\hline
+\endhead
+\texttt{FIOxMASK0} & Máscara para \texttt{Px.0} a \texttt{Px.7}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0MASK0 - 0x2009 C010}, \texttt{FIO1MASK0 - 0x2009 C030}, \texttt{FIO2MASK0 - 0x2009 C050}, \texttt{FIO3MASK0 - 0x2009 C070}, \texttt{FIO4MASK0 - 0x2009 C090}. \\
+\hline
+\texttt{FIOxMASK1} & Máscara para \texttt{Px.8} a \texttt{Px.15}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0MASK1 - 0x2009 C011}, \texttt{FIO1MASK1 - 0x2009 C031}, \texttt{FIO2MASK1 - 0x2009 C051}, \texttt{FIO3MASK1 - 0x2009 C071}, \texttt{FIO4MASK1 - 0x2009 C091}. \\
+\hline
+\texttt{FIOxMASK2} & Máscara para \texttt{Px.16} a \texttt{Px.23}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0MASK2 - 0x2009 C012}, \texttt{FIO1MASK2 - 0x2009 C032}, \texttt{FIO2MASK2 - 0x2009 C052}, \texttt{FIO3MASK2 - 0x2009 C072}, \texttt{FIO4MASK2 - 0x2009 C092}. \\
+\hline
+\texttt{FIOxMASK3} & Máscara para \texttt{Px.24} a \texttt{Px.31}. & 8 / R/W & \texttt{0x00} & \texttt{FIO0MASK3 - 0x2009 C013}, \texttt{FIO1MASK3 - 0x2009 C033}, \texttt{FIO2MASK3 - 0x2009 C053}, \texttt{FIO3MASK3 - 0x2009 C073}, \texttt{FIO4MASK3 - 0x2009 C093}. \\
+\hline
+\texttt{FIOxMASKL} & Máscara para \texttt{Px.0} a \texttt{Px.15}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0MASKL - 0x2009 C010}, \texttt{FIO1MASKL - 0x2009 C030}, \texttt{FIO2MASKL - 0x2009 C050}, \texttt{FIO3MASKL - 0x2009 C070}, \texttt{FIO4MASKL - 0x2009 C090}. \\
+\hline
+\texttt{FIOxMASKU} & Máscara para \texttt{Px.16} a \texttt{Px.31}. & 16 / R/W & \texttt{0x0000} & \texttt{FIO0MASKU - 0x2009 C012}, \texttt{FIO1MASKU - 0x2009 C032}, \texttt{FIO2MASKU - 0x2009 C052}, \texttt{FIO3MASKU - 0x2009 C072}, \texttt{FIO4MASKU - 0x2009 C092}. \\
+\hline
+\end{longtable}
+
+\subsubsection{GPIO interrupt registers}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO overall Interrupt Status register \texttt{IOIntStatus} (Table 113)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0} & \texttt{P0Int} & \texttt{0}: no hay interrupciones pendientes en Port 0. \texttt{1}: existe al menos una interrupción pendiente en Port 0. & \texttt{0} \\
+    \hline
+    \texttt{1} & \texttt{-} & Reservado. & NA \\
+    \hline
+    \texttt{2} & \texttt{P2Int} & \texttt{0}: no hay interrupciones pendientes en Port 2. \texttt{1}: existe al menos una interrupción pendiente en Port 2. & \texttt{0} \\
+    \hline
+    \texttt{31:3} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Enable for port 0 Rising Edge \texttt{IO0IntEnR} (Table 114)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11, 15--18} & \texttt{P0.nER} & Habilita interrupción por flanco ascendente para \texttt{P0.n}. \texttt{0}: deshabilitada. \texttt{1}: habilitada. & \texttt{0} \\
+    \hline
+    \texttt{19--30[1]} & \texttt{P0.nER} & Igual que la fila anterior para los bits altos disponibles en Port 0. & \texttt{0} \\
+    \hline
+    \texttt{14:12} & \texttt{-} & Reservado. & NA \\
+    \hline
+    \texttt{31} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Enable for port 2 Rising Edge \texttt{IO2IntEnR} (Table 115)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11} & \texttt{P2.nER} & Habilita interrupción por flanco ascendente para \texttt{P2.n}. \texttt{0}: deshabilitada. \texttt{1}: habilitada. & \texttt{0} \\
+    \hline
+    \texttt{12--13[1]} & \texttt{P2.nER} & Igual que la fila anterior para \texttt{P2.12} y \texttt{P2.13}. & \texttt{0} \\
+    \hline
+    \texttt{31:14} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Enable for port 0 Falling Edge \texttt{IO0IntEnF} (Table 116)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11, 15--18} & \texttt{P0.nEF} & Habilita interrupción por flanco descendente para \texttt{P0.n}. \texttt{0}: deshabilitada. \texttt{1}: habilitada. & \texttt{0} \\
+    \hline
+    \texttt{19--30[1]} & \texttt{P0.nEF} & Igual que la fila anterior para los bits altos disponibles en Port 0. & \texttt{0} \\
+    \hline
+    \texttt{14:12} & \texttt{-} & Reservado. & NA \\
+    \hline
+    \texttt{31} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Enable for port 2 Falling Edge \texttt{IO2IntEnF} (Table 117)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11} & \texttt{P2.nEF} & Habilita interrupción por flanco descendente para \texttt{P2.n}. \texttt{0}: deshabilitada. \texttt{1}: habilitada. & \texttt{0} \\
+    \hline
+    \texttt{12--13[1]} & \texttt{P2.nEF} & Igual que la fila anterior para \texttt{P2.12} y \texttt{P2.13}. & \texttt{0} \\
+    \hline
+    \texttt{31:14} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Status for port 0 Rising Edge Interrupt \texttt{IO0IntStatR} (Table 118)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11, 15--18} & \texttt{P0.nREI} & Estado de interrupción por flanco ascendente en \texttt{P0.n}. \texttt{0}: no detectado. \texttt{1}: interrupción generada. & \texttt{0} \\
+    \hline
+    \texttt{19--30[1]} & \texttt{P0.nREI} & Igual que la fila anterior para los bits altos disponibles en Port 0. & \texttt{0} \\
+    \hline
+    \texttt{14:12} & \texttt{-} & Reservado. & NA \\
+    \hline
+    \texttt{31} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Status for port 2 Rising Edge Interrupt \texttt{IO2IntStatR} (Table 119)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11} & \texttt{P2.nREI} & Estado de interrupción por flanco ascendente en \texttt{P2.n}. \texttt{0}: no detectado. \texttt{1}: interrupción generada. & \texttt{0} \\
+    \hline
+    \texttt{12--13[1]} & \texttt{P2.nREI} & Igual que la fila anterior para \texttt{P2.12} y \texttt{P2.13}. & \texttt{0} \\
+    \hline
+    \texttt{31:14} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Status for port 0 Falling Edge Interrupt \texttt{IO0IntStatF} (Table 120)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11, 15--18} & \texttt{P0.nFEI} & Estado de interrupción por flanco descendente en \texttt{P0.n}. \texttt{0}: no detectado. \texttt{1}: interrupción generada. & \texttt{0} \\
+    \hline
+    \texttt{19--30[1]} & \texttt{P0.nFEI} & Igual que la fila anterior para los bits altos disponibles en Port 0. & \texttt{0} \\
+    \hline
+    \texttt{14:12} & \texttt{-} & Reservado. & NA \\
+    \hline
+    \texttt{31} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Status for port 2 Falling Edge Interrupt \texttt{IO2IntStatF} (Table 121)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11} & \texttt{P2.nFEI} & Estado de interrupción por flanco descendente en \texttt{P2.n}. \texttt{0}: no detectado. \texttt{1}: interrupción generada. & \texttt{0} \\
+    \hline
+    \texttt{12--13[1]} & \texttt{P2.nFEI} & Igual que la fila anterior para \texttt{P2.12} y \texttt{P2.13}. & \texttt{0} \\
+    \hline
+    \texttt{31:14} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Clear register for port 0 \texttt{IO0IntClr} (Table 122)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11, 15--18} & \texttt{P0.nCI} & Limpia interrupciones GPIO para \texttt{P0.n}. \texttt{0}: \texttt{IOxIntStatR/F} sin cambios. \texttt{1}: limpia los bits correspondientes. & \texttt{0} \\
+    \hline
+    \texttt{19--30[1]} & \texttt{P0.nCI} & Igual que la fila anterior para los bits altos disponibles en Port 0. & \texttt{0} \\
+    \hline
+    \texttt{14:12} & \texttt{-} & Reservado. & NA \\
+    \hline
+    \texttt{31} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{GPIO Interrupt Clear register for port 2 \texttt{IO2IntClr} (Table 123)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.10\textwidth}|}
+    \hline
+    \textbf{Bit} & \textbf{Symbol} & \textbf{Value / Description} & \textbf{Reset} \\
+    \hline
+    \texttt{0--11} & \texttt{P2.nCI} & Limpia interrupciones GPIO para \texttt{P2.n}. \texttt{0}: \texttt{IOxIntStatR/F} sin cambios. \texttt{1}: limpia los bits correspondientes. & \texttt{0} \\
+    \hline
+    \texttt{12--13[1]} & \texttt{P2.nCI} & Igual que la fila anterior para \texttt{P2.12} y \texttt{P2.13}. & \texttt{0} \\
+    \hline
+    \texttt{31:14} & \texttt{-} & Reservado. & NA \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{[1]} No disponible en encapsulado de 80 pines.
+\end{itemize}
+
+\subsection{GPIO usage notes}
+\subsubsection{Example: instantaneous output of 0s and 1s on a GPIO port}
+\begin{itemize}
+  \item El periférico permite actualización instantánea de patrones de salida mediante accesos de \textbf{32 bits}, \textbf{16 bits} o \textbf{8 bits}.
+  \item La elección del ancho de acceso depende de la agrupación de señales y del patrón a escribir.
+  \item El acceso de menor ancho simplifica cambios locales; el acceso de palabra completa simplifica patrones paralelos.
+\end{itemize}
+
+\subsubsection{Writing to \texttt{FIOSET}/\texttt{FIOCLR} vs. \texttt{FIOPIN}}
+\begin{itemize}
+  \item \texttt{FIOSET} y \texttt{FIOCLR} permiten cambiar bits puntuales sin reescribir el resto del puerto.
+  \item Escribir en \texttt{FIOPIN} aplica un valor completo sobre todos los bits de salida no enmascarados.
+  \item Para cambios puntuales de salida, la vía normal es \texttt{FIOSET}/\texttt{FIOCLR}.
+  \item \texttt{FIOPIN} conviene cuando se desea forzar en una sola operación un patrón paralelo completo.
+\end{itemize}

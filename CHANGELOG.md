@@ -3,6 +3,13 @@
 ## 2026-03-12
 
 ### Documentacion latex
+- Se agrego `documentacion latex/chapter9.tex` con el resumen tecnico del `Chapter 9: LPC17xx General Purpose Input/Output (GPIO)`.
+- `documentacion latex/main.tex` ahora integra el capitulo 9 mediante `\input{chapter9.tex}` y tolera la ausencia de `chapter8.tex`.
+- Se incorporaron las tablas `100` a `123` del capitulo 9 y una nota tecnica breve sobre `bit-banding`.
+- Se actualizo `.gitignore` para permitir versionar `documentacion latex/chapter*.tex` y excluir `documentacion latex/qa_png/`.
+- Se recompilo `documentacion latex/main.pdf` con el nuevo bloque documental.
+
+### Documentacion latex
 - Se agrego `documentacion latex/chapter8.tex` con el resumen tecnico completo del `Chapter 8: LPC17xx Pin connect block`.
 - `documentacion latex/main.tex` ahora integra el capitulo 8 mediante `\input{chapter8.tex}`.
 - Se incorporaron en el apunte las tablas `74` a `99` del capitulo 8, manteniendo el orden del datasheet.

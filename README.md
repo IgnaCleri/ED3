@@ -71,9 +71,9 @@ La trazabilidad de figuras se mantiene en `documentacion latex/figure_inventory.
 ## Politica de versionado para LaTeX (desde 2026-03-09)
 
 - Se prioriza versionar **fuentes reproducibles y assets**.
-- Se versionan: `main.tex`, `README.md`, `scripts/`, `images/`, `figure_inventory.csv`.
+- Se versionan: `main.tex`, `chapter*.tex`, `README.md`, `scripts/`, `images/`, `figure_inventory.csv`.
 - `main.pdf` solo se versiona cuando corresponde a una entrega.
-- No se versionan artefactos intermedios (`*.aux`, `*.log`, `*.toc`), previews/verificaciones ni temporales de `tmp/`.
+- No se versionan artefactos intermedios (`*.aux`, `*.log`, `*.toc`), previews/verificaciones como `qa_png/` ni temporales de `tmp/`.
 
 ## Historial de cambios
 
