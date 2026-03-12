@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-03-12
+
+### Documentacion latex
+- Se agrego `documentacion latex/chapter8.tex` con el resumen tecnico completo del `Chapter 8: LPC17xx Pin connect block`.
+- `documentacion latex/main.tex` ahora integra el capitulo 8 mediante `\input{chapter8.tex}`.
+- Se incorporaron en el apunte las tablas `74` a `99` del capitulo 8, manteniendo el orden del datasheet.
+- Se documento en `documentacion latex/README.md` el proceso concreto usado para integrar y validar este capitulo.
+- Se recompilo `documentacion latex/main.pdf` con el nuevo bloque documental.
+
 ## 2026-03-09
 
 ### Documentacion y estructura

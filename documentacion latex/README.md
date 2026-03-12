@@ -103,3 +103,66 @@ No se versiona:
 ## Nota de numeracion
 
 Se mantienen saltos de numeracion porque el documento sigue la estructura del datasheet original.
+
+## Proceso documentado para el capitulo 8
+
+Se deja registrado el flujo concreto que se uso para integrar `Chapter 8: LPC17xx Pin connect block` al apunte.
+
+### Objetivo editorial
+
+- Mantener formato de consulta rapida.
+- Conservar la estructura original `8.1` a `8.5.21`.
+- Preservar completas y en orden las tablas `74` a `99`.
+- Poner enfasis en la electronica de los modos de pin:
+  - seleccion de funcion,
+  - `pull-up`,
+  - `pull-down`,
+  - `repeater`,
+  - `open-drain`,
+  - excepciones de `I2C0` y USB.
+
+### Implementacion usada
+
+1. Se relevo el `Chapter 8` en `datasheet/lpc17xx_um_unlocked.txt` y se reconstruyo su estructura completa:
+   - `8.1` a `8.5.21`,
+   - tablas `74` a `99`,
+   - notas especiales para `P0.27`, `P0.28`, `P0.29` y `P0.30`.
+2. Se separo el contenido nuevo en `documentacion latex/chapter8.tex`.
+3. `main.tex` paso a incluir ese archivo con `\input{chapter8.tex}` para evitar que el archivo principal siga creciendo de forma monolitica.
+4. Se usaron `longtable` y tablas compactas para que los registros extensos entren en pagina sin perder filas.
+5. Se normalizaron algunas inconsistencias de la transcripcion TXT cuando el simbolo del registro dejaba claro el valor correcto:
+   - `PINMODE1` describe `P0.16` a `P0.26`, aunque la transcripcion menciona `Port 1`.
+   - en `PINMODE_OD3`, el bit de `P3.25` se corrigio respecto de un typo de la transcripcion.
+   - en `PINMODE_OD4`, el bit 29 se documento como `P4.29OD`.
+6. No se agregaron figuras nuevas para este capitulo porque todo el contenido relevante pudo resolverse con tablas y notas tecnicas.
+
+### QA aplicada
+
+1. Se compilo con el script de la skill:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\Usuario\.codex\skills\latex-pdf-study-assistant\scripts\compile_latex.ps1" -WorkspaceRoot "C:\Users\Usuario\Documents\Ignacio\Facultad\TercerAño\ED3"
+```
+
+2. Se verifico que el indice del PDF incluyera el nuevo capitulo 8.
+3. El capitulo quedo ubicado entre las paginas `15` y `26` del PDF generado.
+4. Se renderizaron paginas afectadas a `documentacion latex/qa_png/`.
+5. Se revisaron visualmente paginas representativas del bloque nuevo, en particular:
+   - `page_20-20.png`,
+   - `page_26-26.png`.
+6. Resultado de la revision:
+   - tablas visibles y completas en las paginas inspeccionadas,
+   - sin cortes evidentes de columnas,
+   - sin necesidad de rasterizar tablas.
+
+### Archivos tocados por este capitulo
+
+- `documentacion latex/main.tex`
+- `documentacion latex/chapter8.tex`
+- `documentacion latex/main.pdf`
+
+### Criterio para capitulos futuros largos
+
+- Si un capitulo nuevo agrega muchas tablas o registros, preferir archivo separado e inclusion con `\input{...}`.
+- Mantener `main.tex` como orquestador del documento y no como unico contenedor de todo el contenido.
+- Hacer QA por paginas representativas cuando el bloque agregado supera 5 paginas.
