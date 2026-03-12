@@ -1,0 +1,1031 @@
+\setcounter{section}{7}
+\section{Pin connect block LPC17xx}
+\subsection{Cómo leer este capítulo}
+La \texttt{Table 74} resume qué registro \texttt{PINSELx} controla cada rango de pines del LPC17xx.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Resumen de registros \texttt{PINSEL}}
+  \begin{tabularx}{0.92\textwidth}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.16\textwidth}|}
+    \hline
+    \textbf{Registro} & \textbf{Pines o función controlada} & \textbf{Tabla} \\
+    \hline
+    \texttt{PINSEL0} & \texttt{P0[15:0]} & Table 79 \\
+    \hline
+    \texttt{PINSEL1} & \texttt{P0[31:16]} & Table 80 \\
+    \hline
+    \texttt{PINSEL2} & \texttt{P1[15:0]} (Ethernet) & Table 81 \\
+    \hline
+    \texttt{PINSEL3} & \texttt{P1[31:16]} & Table 82 \\
+    \hline
+    \texttt{PINSEL4} & \texttt{P2[15:0]} & Table 83 \\
+    \hline
+    \texttt{PINSEL5} & \texttt{P2[31:16]} & No usado \\
+    \hline
+    \texttt{PINSEL6} & \texttt{P3[15:0]} & No usado \\
+    \hline
+    \texttt{PINSEL7} & \texttt{P3[31:16]} & Table 84 \\
+    \hline
+    \texttt{PINSEL8} & \texttt{P4[15:0]} & No usado \\
+    \hline
+    \texttt{PINSEL9} & \texttt{P4[31:16]} & Table 85 \\
+    \hline
+    \texttt{PINSEL10} & Habilitación del puerto de traza & Table 86 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{Descripción}
+El \textit{pin connect block} permite que la mayoría de los pines del microcontrolador expongan más de una función potencial. Los registros de configuración gobiernan los multiplexores que conectan el pin físico con los periféricos internos.
+
+Los periféricos deben conectarse a los pines apropiados antes de habilitarlos y antes de habilitar sus interrupciones asociadas. La actividad de una función periférica activa que no esté mapeada a un pin relacionado debe considerarse indefinida.
+
+Seleccionar una única función en un pin excluye las demás funciones periféricas disponibles sobre ese mismo pin. Aun así, la entrada GPIO permanece conectada y puede leerse por software o contribuir al sistema de interrupciones GPIO.
+
+\subsection{Valores de selección de función de pin}
+Los registros \texttt{PINSEL} controlan la función expuesta por cada pin. Cada par de bits de \texttt{PINSEL0} a \texttt{PINSEL9} corresponde a un pin específico.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Bits de selección de función de pin}
+  \begin{tabularx}{0.9\textwidth}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+    \hline
+    \textbf{Valor en \texttt{PINSEL0} a \texttt{PINSEL9}} & \textbf{Función} & \textbf{Valor tras reset} \\
+    \hline
+    \texttt{00} & Función primaria, normalmente GPIO. & \texttt{00} \\
+    \hline
+    \texttt{01} & Primera función alternativa. & --- \\
+    \hline
+    \texttt{10} & Segunda función alternativa. & --- \\
+    \hline
+    \texttt{11} & Tercera función alternativa. & --- \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+El bit de dirección en los registros GPIO sólo tiene efecto cuando el pin está configurado como GPIO. Para las demás funciones la dirección queda controlada automáticamente por el periférico.
+
+\paragraph{Conexiones múltiples}
+Una misma función periférica puede estar disponible en más de un pin. Si una salida periférica se asigna a varios pines, la señal aparece en todos ellos. Si una entrada periférica se asigna a varios pines, el periférico toma la señal del pin con menor número de puerto y, dentro del mismo puerto, del pin con menor número.
+
+\subsection{Valores de selección del modo de pin}
+Los registros \texttt{PINMODE} controlan el modo de entrada de todos los puertos. Esto incluye las resistencias internas \textit{pull-up}/\textit{pull-down} y el modo especial \textit{open-drain}. La selección de \textit{pull-up}/\textit{pull-down} aplica a cualquier función del pin salvo en los pines \texttt{I2C0} y USB. El modo efectivo usa tres bits por pin: dos bits en \texttt{PINMODE} y un bit adicional en \texttt{PINMODE\_OD}.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Bits de selección de modo de pin}
+  \begin{tabularx}{0.9\textwidth}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+    \hline
+    \textbf{Valor en \texttt{PINMODE0} a \texttt{PINMODE9}} & \textbf{Función} & \textbf{Valor tras reset} \\
+    \hline
+    \texttt{00} & Resistencia interna \textit{pull-up} habilitada. & \texttt{00} \\
+    \hline
+    \texttt{01} & Modo \textit{repeater}. & --- \\
+    \hline
+    \texttt{10} & Sin \textit{pull-up} ni \textit{pull-down}. & --- \\
+    \hline
+    \texttt{11} & Resistencia interna \textit{pull-down} habilitada. & --- \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{\textit{Pull-up}:} polariza el pin a nivel alto cuando no hay conducción externa.
+  \item \textbf{\textit{Pull-down}:} polariza el pin a nivel bajo cuando no hay conducción externa.
+  \item \textbf{\textit{Neither}:} deja el nodo sin polarización interna; sólo conviene cuando existe una red externa definida.
+  \item \textbf{\textit{Repeater}:} habilita \textit{pull-up} si el pin está en alto y \textit{pull-down} si está en bajo, reteniendo el último estado conocido mientras el pin sea entrada y no esté manejado externamente.
+  \item \textbf{Límite de \textit{repeater}:} la retención no aplica en \textit{Deep Power-down}.
+\end{itemize}
+
+Los registros \texttt{PINMODE\_OD} controlan el modo \textit{open-drain}. Cuando un pin configurado como salida escribe \texttt{0}, el pad conduce a masa. Cuando escribe \texttt{1}, el driver de salida se desactiva, equivalente a liberar el pin. Así se emula una salida de drenador abierto.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Bits de selección de modo \textit{open-drain}}
+  \begin{tabularx}{0.9\textwidth}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+    \hline
+    \textbf{Valor en \texttt{PINMODE\_OD0} a \texttt{PINMODE\_OD4}} & \textbf{Función} & \textbf{Valor tras reset} \\
+    \hline
+    \texttt{0} & Modo normal, no \textit{open-drain}. & \texttt{0} \\
+    \hline
+    \texttt{1} & Modo \textit{open-drain}. & --- \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\paragraph{Efecto de \texttt{PINMODE} en \textit{open-drain}}
+El valor de \texttt{PINMODE} normalmente sólo aplica cuando el pin es entrada. En \textit{open-drain}, ese modo no aplica mientras el pin está conduciendo un \texttt{0}. En cambio, cuando el pin vale \texttt{1} y el driver queda apagado, la configuración de \texttt{PINMODE} vuelve a ser efectiva. Esto permite, por ejemplo, una salida \textit{open-drain} con \textit{pull-up} interno activo sólo cuando el pin no está forzando el nivel bajo.
+
+\subsection{Descripción de registros}
+El módulo de control de pines incluye los registros de selección de función, modo de entrada, modo \textit{open-drain} y configuración especial del bloque \texttt{I2C0}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.34\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\caption{Mapa de registros del Pin Connect Block}\\
+\hline
+\textbf{Nombre} & \textbf{Descripción} & \textbf{Acceso} & \textbf{Reset} & \textbf{Dirección} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Nombre} & \textbf{Descripción} & \textbf{Acceso} & \textbf{Reset} & \textbf{Dirección} \\
+\hline
+\endhead
+\texttt{PINSEL0} & Pin function select register 0. & R/W & \texttt{0} & \texttt{0x4002 C000} \\
+\hline
+\texttt{PINSEL1} & Pin function select register 1. & R/W & \texttt{0} & \texttt{0x4002 C004} \\
+\hline
+\texttt{PINSEL2} & Pin function select register 2. & R/W & \texttt{0} & \texttt{0x4002 C008} \\
+\hline
+\texttt{PINSEL3} & Pin function select register 3. & R/W & \texttt{0} & \texttt{0x4002 C00C} \\
+\hline
+\texttt{PINSEL4} & Pin function select register 4. & R/W & \texttt{0} & \texttt{0x4002 C010} \\
+\hline
+\texttt{PINSEL7} & Pin function select register 7. & R/W & \texttt{0} & \texttt{0x4002 C01C} \\
+\hline
+\texttt{PINSEL8} & Pin function select register 8. & R/W & \texttt{0} & \texttt{0x4002 C020} \\
+\hline
+\texttt{PINSEL9} & Pin function select register 9. & R/W & \texttt{0} & \texttt{0x4002 C024} \\
+\hline
+\texttt{PINSEL10} & Pin function select register 10. & R/W & \texttt{0} & \texttt{0x4002 C028} \\
+\hline
+\texttt{PINMODE0} & Pin mode select register 0. & R/W & \texttt{0} & \texttt{0x4002 C040} \\
+\hline
+\texttt{PINMODE1} & Pin mode select register 1. & R/W & \texttt{0} & \texttt{0x4002 C044} \\
+\hline
+\texttt{PINMODE2} & Pin mode select register 2. & R/W & \texttt{0} & \texttt{0x4002 C048} \\
+\hline
+\texttt{PINMODE3} & Pin mode select register 3. & R/W & \texttt{0} & \texttt{0x4002 C04C} \\
+\hline
+\texttt{PINMODE4} & Pin mode select register 4. & R/W & \texttt{0} & \texttt{0x4002 C050} \\
+\hline
+\texttt{PINMODE5} & Pin mode select register 5. & R/W & \texttt{0} & \texttt{0x4002 C054} \\
+\hline
+\texttt{PINMODE6} & Pin mode select register 6. & R/W & \texttt{0} & \texttt{0x4002 C058} \\
+\hline
+\texttt{PINMODE7} & Pin mode select register 7. & R/W & \texttt{0} & \texttt{0x4002 C05C} \\
+\hline
+\texttt{PINMODE9} & Pin mode select register 9. & R/W & \texttt{0} & \texttt{0x4002 C064} \\
+\hline
+\texttt{PINMODE\_OD0} & Open drain mode control register 0. & R/W & \texttt{0} & \texttt{0x4002 C068} \\
+\hline
+\texttt{PINMODE\_OD1} & Open drain mode control register 1. & R/W & \texttt{0} & \texttt{0x4002 C06C} \\
+\hline
+\texttt{PINMODE\_OD2} & Open drain mode control register 2. & R/W & \texttt{0} & \texttt{0x4002 C070} \\
+\hline
+\texttt{PINMODE\_OD3} & Open drain mode control register 3. & R/W & \texttt{0} & \texttt{0x4002 C074} \\
+\hline
+\texttt{PINMODE\_OD4} & Open drain mode control register 4. & R/W & \texttt{0} & \texttt{0x4002 C078} \\
+\hline
+\texttt{I2CPADCFG} & I2C Pin Configuration register. & R/W & \texttt{0} & \texttt{0x4002 C07C} \\
+\hline
+\end{longtable}
+
+\noindent\textit{Nota:} el valor de reset refleja sólo los bits usados; no incluye el contenido de bits reservados. Ante \textit{external reset}, \textit{watchdog reset}, \textit{power-on reset} y \textit{BOD reset}, todos los registros del módulo vuelven a \texttt{0}.
+
+\scriptsize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\LTpre}{4pt}
+\setlength{\LTpost}{10pt}
+
+\subsubsection{Pin Function Select register 0 (\texttt{PINSEL0} - \texttt{0x4002 C000})}
+Controla la mitad baja del puerto 0. El bit de dirección en \texttt{FIO0DIR} sólo es efectivo cuando se selecciona la función GPIO.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 0 (\texttt{PINSEL0}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.0} & GPIO Port 0.0 & \texttt{RD1} & \texttt{TXD3} & \texttt{SDA1} & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.1} & GPIO Port 0.1 & \texttt{TD1} & \texttt{RXD3} & \texttt{SCL1} & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.2} & GPIO Port 0.2 & \texttt{TXD0} & \texttt{AD0.7} & Reserved & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.3} & GPIO Port 0.3 & \texttt{RXD0} & \texttt{AD0.6} & Reserved & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.4[1]} & GPIO Port 0.4 & \texttt{I2SRX\_CLK} & \texttt{RD2} & \texttt{CAP2.0} & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.5[1]} & GPIO Port 0.5 & \texttt{I2SRX\_WS} & \texttt{TD2} & \texttt{CAP2.1} & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.6} & GPIO Port 0.6 & \texttt{I2SRX\_SDA} & \texttt{SSEL1} & \texttt{MAT2.0} & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.7} & GPIO Port 0.7 & \texttt{I2STX\_CLK} & \texttt{SCK1} & \texttt{MAT2.1} & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.8} & GPIO Port 0.8 & \texttt{I2STX\_WS} & \texttt{MISO1} & \texttt{MAT2.2} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.9} & GPIO Port 0.9 & \texttt{I2STX\_SDA} & \texttt{MOSI1} & \texttt{MAT2.3} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.10} & GPIO Port 0.10 & \texttt{TXD2} & \texttt{SDA2} & \texttt{MAT3.0} & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P0.11} & GPIO Port 0.11 & \texttt{RXD2} & \texttt{SCL2} & \texttt{MAT3.1} & \texttt{00} \\
+\hline
+\texttt{29:24} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{31:30} & \texttt{P0.15} & GPIO Port 0.15 & \texttt{TXD1} & \texttt{SCK0} & \texttt{SCK} & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Pin Function Select register 1 (\texttt{PINSEL1} - \texttt{0x4002 C004})}
+Controla la mitad alta del puerto 0.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 1 (\texttt{PINSEL1}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.16} & GPIO Port 0.16 & \texttt{RXD1} & \texttt{SSEL0} & \texttt{SSEL} & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.17} & GPIO Port 0.17 & \texttt{CTS1} & \texttt{MISO0} & \texttt{MISO} & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.18} & GPIO Port 0.18 & \texttt{DCD1} & \texttt{MOSI0} & \texttt{MOSI} & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.19[1]} & GPIO Port 0.19 & \texttt{DSR1} & Reserved & \texttt{SDA1} & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.20[1]} & GPIO Port 0.20 & \texttt{DTR1} & Reserved & \texttt{SCL1} & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.21[1]} & GPIO Port 0.21 & \texttt{RI1} & Reserved & \texttt{RD1} & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.22} & GPIO Port 0.22 & \texttt{RTS1} & Reserved & \texttt{TD1} & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.23[1]} & GPIO Port 0.23 & \texttt{AD0.0} & \texttt{I2SRX\_CLK} & \texttt{CAP3.0} & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.24[1]} & GPIO Port 0.24 & \texttt{AD0.1} & \texttt{I2SRX\_WS} & \texttt{CAP3.1} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.25} & GPIO Port 0.25 & \texttt{AD0.2} & \texttt{I2SRX\_SDA} & \texttt{TXD3} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.26} & GPIO Port 0.26 & \texttt{AD0.3} & \texttt{AOUT} & \texttt{RXD3} & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P0.27[1][2]} & GPIO Port 0.27 & \texttt{SDA0} & \texttt{USB\_SDA} & Reserved & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P0.28[1][2]} & GPIO Port 0.28 & \texttt{SCL0} & \texttt{USB\_SCL} & Reserved & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P0.29} & GPIO Port 0.29 & \texttt{USB\_D+} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{29:28} & \texttt{P0.30} & GPIO Port 0.30 & \texttt{USB\_D-} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{31:30} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}\\
+\textit{[2] \texttt{P0.27} y \texttt{P0.28} son pines \textit{open-drain} para compatibilidad con bus I\textsuperscript{2}C.}
+
+\subsubsection{Pin Function Select register 2 (\texttt{PINSEL2} - \texttt{0x4002 C008})}
+Controla la mitad baja del puerto 1, asociada principalmente a señales Ethernet.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 2 (\texttt{PINSEL2}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.0} & GPIO Port 1.0 & \texttt{ENET\_TXD0} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.1} & GPIO Port 1.1 & \texttt{ENET\_TXD1} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{7:4} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{9:8} & \texttt{P1.4} & GPIO Port 1.4 & \texttt{ENET\_TX\_EN} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{15:10} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{17:16} & \texttt{P1.8} & GPIO Port 1.8 & \texttt{ENET\_CRS} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.9} & GPIO Port 1.9 & \texttt{ENET\_RXD0} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.10} & GPIO Port 1.10 & \texttt{ENET\_RXD1} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{27:22} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{29:28} & \texttt{P1.14} & GPIO Port 1.14 & \texttt{ENET\_RX\_ER} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.15} & GPIO Port 1.15 & \texttt{ENET\_REF\_CLK} & Reserved & Reserved & \texttt{00} \\
+\hline
+\end{longtable}
+
+\subsubsection{Pin Function Select register 3 (\texttt{PINSEL3} - \texttt{0x4002 C00C})}
+Controla la mitad alta del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 3 (\texttt{PINSEL3}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.16[1]} & GPIO Port 1.16 & \texttt{ENET\_MDC} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.17[1]} & GPIO Port 1.17 & \texttt{ENET\_MDIO} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P1.18} & GPIO Port 1.18 & \texttt{USB\_UP\_LED} & \texttt{PWM1.1} & \texttt{CAP1.0} & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P1.19} & GPIO Port 1.19 & \texttt{MCOA0} & \texttt{USB\_PPWR} & \texttt{CAP1.1} & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P1.20} & GPIO Port 1.20 & \texttt{MCI0} & \texttt{PWM1.2} & \texttt{SCK0} & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P1.21[1]} & GPIO Port 1.21 & \texttt{MCABORT} & \texttt{PWM1.3} & \texttt{SSEL0} & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P1.22} & GPIO Port 1.22 & \texttt{MCOB0} & \texttt{USB\_PWRD} & \texttt{MAT1.0} & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P1.23} & GPIO Port 1.23 & \texttt{MCI1} & \texttt{PWM1.4} & \texttt{MISO0} & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P1.24} & GPIO Port 1.24 & \texttt{MCI2} & \texttt{PWM1.5} & \texttt{MOSI0} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.25} & GPIO Port 1.25 & \texttt{MCOA1} & Reserved & \texttt{MAT1.1} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.26} & GPIO Port 1.26 & \texttt{MCOB1} & \texttt{PWM1.6} & \texttt{CAP0.0} & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P1.27[1]} & GPIO Port 1.27 & \texttt{CLKOUT} & \texttt{USB\_OVRCR} & \texttt{CAP0.1} & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P1.28} & GPIO Port 1.28 & \texttt{MCOA2} & \texttt{PCAP1.0} & \texttt{MAT0.0} & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P1.29} & GPIO Port 1.29 & \texttt{MCOB2} & \texttt{PCAP1.1} & \texttt{MAT0.1} & \texttt{00} \\
+\hline
+\texttt{29:28} & \texttt{P1.30} & GPIO Port 1.30 & Reserved & \texttt{VBUS} & \texttt{AD0.4} & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.31} & GPIO Port 1.31 & Reserved & \texttt{SCK1} & \texttt{AD0.5} & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Pin Function Select register 4 (\texttt{PINSEL4} - \texttt{0x4002 C010})}
+Controla la mitad baja del puerto 2.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 4 (\texttt{PINSEL4}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P2.0} & GPIO Port 2.0 & \texttt{PWM1.1} & \texttt{TXD1} & Reserved & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P2.1} & GPIO Port 2.1 & \texttt{PWM1.2} & \texttt{RXD1} & Reserved & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P2.2} & GPIO Port 2.2 & \texttt{PWM1.3} & \texttt{CTS1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P2.3} & GPIO Port 2.3 & \texttt{PWM1.4} & \texttt{DCD1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P2.4} & GPIO Port 2.4 & \texttt{PWM1.5} & \texttt{DSR1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P2.5} & GPIO Port 2.5 & \texttt{PWM1.6} & \texttt{DTR1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P2.6} & GPIO Port 2.6 & \texttt{PCAP1.0} & \texttt{RI1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P2.7} & GPIO Port 2.7 & \texttt{RD2} & \texttt{RTS1} & Reserved & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P2.8} & GPIO Port 2.8 & \texttt{TD2} & \texttt{TXD2} & \texttt{ENET\_MDC} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P2.9} & GPIO Port 2.9 & \texttt{USB\_CONNECT} & \texttt{RXD2} & \texttt{ENET\_MDIO} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P2.10} & GPIO Port 2.10 & \texttt{EINT0} & \texttt{NMI} & Reserved & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P2.11[1]} & GPIO Port 2.11 & \texttt{EINT1} & Reserved & \texttt{I2STX\_CLK} & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P2.12[1]} & GPIO Port 2.12 & \texttt{EINT2} & Reserved & \texttt{I2STX\_WS} & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P2.13[1]} & GPIO Port 2.13 & \texttt{EINT3} & Reserved & \texttt{I2STX\_SDA} & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}\\
+\textit{[2] Estos pines también soportan traza de depuración al seleccionarse vía herramienta de desarrollo o escribiendo en \texttt{PINSEL10}.}
+
+\subsubsection{Pin Function Select register 7 (\texttt{PINSEL7} - \texttt{0x4002 C01C})}
+Controla la mitad alta del puerto 3.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 7 (\texttt{PINSEL7}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{17:0} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{19:18} & \texttt{P3.25[1]} & GPIO Port 3.25 & Reserved & \texttt{MAT0.0} & \texttt{PWM1.2} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P3.26[1]} & GPIO Port 3.26 & \texttt{STCLK} & \texttt{MAT0.1} & \texttt{PWM1.3} & \texttt{00} \\
+\hline
+\texttt{31:22} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Pin Function Select register 9 (\texttt{PINSEL9} - \texttt{0x4002 C024})}
+Controla la mitad alta del puerto 4.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 9 (\texttt{PINSEL9}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{23:0} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P4.28} & GPIO Port 4.28 & \texttt{RX\_MCLK} & \texttt{MAT2.0} & \texttt{TXD3} & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P4.29} & GPIO Port 4.29 & \texttt{TX\_MCLK} & \texttt{MAT2.1} & \texttt{RXD3} & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{00} \\
+\hline
+\end{longtable}
+
+\subsubsection{Pin Function Select register 10 (\texttt{PINSEL10} - \texttt{0x4002 C028})}
+Sólo el bit 3 de este registro se usa para controlar la función \texttt{TRACE} sobre \texttt{P2.2} a \texttt{P2.6}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.43\textwidth}|>{\centering\arraybackslash}p{0.06\textwidth}|}
+\caption{Pin function select register 10 (\texttt{PINSEL10}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{2:0} & --- & --- & Reserved. El software no debe escribir \texttt{1} en estos bits. & NA \\
+\hline
+\texttt{3} & \texttt{GPIO/TRACE} & \texttt{0} & La interfaz TPIU está deshabilitada. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{GPIO/TRACE} & \texttt{1} & La interfaz TPIU está habilitada. Las señales TPIU aparecen en sus pines independientemente del contenido de \texttt{PINSEL4}. & \texttt{0} \\
+\hline
+\texttt{31:4} & --- & --- & Reserved. El software no debe escribir \texttt{1} en estos bits. & NA \\
+\hline
+\end{longtable}
+
+\subsubsection{Pin Mode select register 0 (\texttt{PINMODE0} - \texttt{0x4002 C040})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 0 a 15 del puerto 0.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 0 (\texttt{PINMODE0}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.00MODE} & Control de resistencia interna para \texttt{P0.0}. \texttt{00}: \textit{pull-up}; \texttt{01}: \textit{repeater}; \texttt{10}: sin \textit{pull}; \texttt{11}: \textit{pull-down}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.01MODE} & Control de \texttt{P0.1}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.02MODE} & Control de \texttt{P0.2}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.03MODE} & Control de \texttt{P0.3}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.04MODE[1]} & Control de \texttt{P0.4}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.05MODE[1]} & Control de \texttt{P0.5}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.06MODE} & Control de \texttt{P0.6}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.07MODE} & Control de \texttt{P0.7}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.08MODE} & Control de \texttt{P0.8}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.09MODE} & Control de \texttt{P0.9}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.10MODE} & Control de \texttt{P0.10}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P0.11MODE} & Control de \texttt{P0.11}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{29:24} & --- & Reserved. & NA \\
+\hline
+\texttt{31:30} & \texttt{P0.15MODE} & Control de \texttt{P0.15}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Pin Mode select register 1 (\texttt{PINMODE1} - \texttt{0x4002 C044})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 26 del puerto 0.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 1 (\texttt{PINMODE1}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.16MODE} & Control de \texttt{P0.16}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.17MODE} & Control de \texttt{P0.17}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.18MODE} & Control de \texttt{P0.18}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.19MODE[1]} & Control de \texttt{P0.19}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.20MODE[1]} & Control de \texttt{P0.20}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.21MODE[1]} & Control de \texttt{P0.21}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.22MODE} & Control de \texttt{P0.22}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.23MODE[1]} & Control de \texttt{P0.23}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.24MODE[1]} & Control de \texttt{P0.24}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.25MODE} & Control de \texttt{P0.25}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.26MODE} & Control de \texttt{P0.26}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{29:22} & --- & Reserved. & NA \\
+\hline
+\texttt{31:30} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Excepciones eléctricas críticas de \texttt{PINMODE1}}
+El modo de pin no puede seleccionarse para \texttt{P0[27]} a \texttt{P0[30]}. Los pines \texttt{P0.27} y \texttt{P0.28} son pines dedicados I\textsuperscript{2}C \textit{open-drain} sin \textit{pull-up}/\textit{pull-down} configurable. Los pines \texttt{P0.29} y \texttt{P0.30} son específicos de USB y tampoco tienen resistencias configurables. Además, \texttt{P0.29} y \texttt{P0.30} deben compartir la misma dirección porque operan como una unidad para la función USB.
+
+\subsubsection{Pin Mode select register 2 (\texttt{PINMODE2} - \texttt{0x4002 C048})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 0 a 15 del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 2 (\texttt{PINMODE2}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.00MODE} & Control de \texttt{P1.0}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.01MODE} & Control de \texttt{P1.1}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:4} & --- & Reserved. & NA \\
+\hline
+\texttt{9:8} & \texttt{P1.04MODE} & Control de \texttt{P1.4}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:10} & --- & Reserved. & NA \\
+\hline
+\texttt{17:16} & \texttt{P1.08MODE} & Control de \texttt{P1.8}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.09MODE} & Control de \texttt{P1.9}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.10MODE} & Control de \texttt{P1.10}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:22} & --- & Reserved. & NA \\
+\hline
+\texttt{29:28} & \texttt{P1.14MODE} & Control de \texttt{P1.14}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.15MODE} & Control de \texttt{P1.15}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\end{longtable}
+
+\subsubsection{Pin Mode select register 3 (\texttt{PINMODE3} - \texttt{0x4002 C04C})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 31 del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 3 (\texttt{PINMODE3}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.16MODE[1]} & Control de \texttt{P1.16}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.17MODE[1]} & Control de \texttt{P1.17}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P1.18MODE} & Control de \texttt{P1.18}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P1.19MODE} & Control de \texttt{P1.19}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P1.20MODE} & Control de \texttt{P1.20}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P1.21MODE[1]} & Control de \texttt{P1.21}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P1.22MODE} & Control de \texttt{P1.22}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P1.23MODE} & Control de \texttt{P1.23}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P1.24MODE} & Control de \texttt{P1.24}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.25MODE} & Control de \texttt{P1.25}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.26MODE} & Control de \texttt{P1.26}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P1.27MODE[1]} & Control de \texttt{P1.27}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P1.28MODE} & Control de \texttt{P1.28}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P1.29MODE} & Control de \texttt{P1.29}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{29:28} & \texttt{P1.30MODE} & Control de \texttt{P1.30}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.31MODE} & Control de \texttt{P1.31}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Pin Mode select register 4 (\texttt{PINMODE4} - \texttt{0x4002 C050})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 0 a 15 del puerto 2.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 4 (\texttt{PINMODE4}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P2.00MODE} & Control de \texttt{P2.0}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P2.01MODE} & Control de \texttt{P2.1}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P2.02MODE} & Control de \texttt{P2.2}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P2.03MODE} & Control de \texttt{P2.3}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P2.04MODE} & Control de \texttt{P2.4}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P2.05MODE} & Control de \texttt{P2.5}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P2.06MODE} & Control de \texttt{P2.6}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P2.07MODE} & Control de \texttt{P2.7}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P2.08MODE} & Control de \texttt{P2.8}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P2.09MODE} & Control de \texttt{P2.9}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P2.10MODE} & Control de \texttt{P2.10}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P2.11MODE[1]} & Control de \texttt{P2.11}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P2.12MODE[1]} & Control de \texttt{P2.12}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P2.13MODE[1]} & Control de \texttt{P2.13}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Pin Mode select register 7 (\texttt{PINMODE7} - \texttt{0x4002 C05C})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 31 del puerto 3.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 7 (\texttt{PINMODE7}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{17:0} & --- & Reserved. & NA \\
+\hline
+\texttt{19:18} & \texttt{P3.25MODE[1]} & Control de \texttt{P3.25}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P3.26MODE[1]} & Control de \texttt{P3.26}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:22} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Pin Mode select register 9 (\texttt{PINMODE9} - \texttt{0x4002 C064})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 31 del puerto 4.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 9 (\texttt{PINMODE9}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{23:0} & --- & Reserved. & NA \\
+\hline
+\texttt{25:24} & \texttt{P4.28MODE} & Control de \texttt{P4.28}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P4.29MODE} & Control de \texttt{P4.29}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+
+\subsubsection{Open Drain Pin Mode select register 0 (\texttt{PINMODE\_OD0} - \texttt{0x4002 C068})}
+Controla el modo \textit{open-drain} para los pines del puerto 0. Un \texttt{0} mantiene el modo normal; un \texttt{1} habilita \textit{open-drain}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 0 (\texttt{PINMODE\_OD0}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{P0.00OD[3]} & Control \textit{open-drain} de \texttt{P0.0}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{P0.01OD[3]} & Control de \texttt{P0.1}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{P0.02OD} & Control de \texttt{P0.2}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{P0.03OD} & Control de \texttt{P0.3}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{4} & \texttt{P0.04OD} & Control de \texttt{P0.4}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{5} & \texttt{P0.05OD} & Control de \texttt{P0.5}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{6} & \texttt{P0.06OD} & Control de \texttt{P0.6}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{7} & \texttt{P0.07OD} & Control de \texttt{P0.7}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{8} & \texttt{P0.08OD} & Control de \texttt{P0.8}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{9} & \texttt{P0.09OD} & Control de \texttt{P0.9}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{10} & \texttt{P0.10OD[3]} & Control de \texttt{P0.10}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{11} & \texttt{P0.11OD[3]} & Control de \texttt{P0.11}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{14:12} & --- & Reserved. & NA \\
+\hline
+\texttt{15} & \texttt{P0.15OD} & Control de \texttt{P0.15}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{16} & \texttt{P0.16OD} & Control de \texttt{P0.16}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{17} & \texttt{P0.17OD} & Control de \texttt{P0.17}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{18} & \texttt{P0.18OD} & Control de \texttt{P0.18}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{19} & \texttt{P0.19OD[3]} & Control de \texttt{P0.19}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{20} & \texttt{P0.20OD[3]} & Control de \texttt{P0.20}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{21} & \texttt{P0.21OD} & Control de \texttt{P0.21}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{22} & \texttt{P0.22OD} & Control de \texttt{P0.22}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{23} & \texttt{P0.23OD} & Control de \texttt{P0.23}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{24} & \texttt{P0.24OD} & Control de \texttt{P0.24}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{25} & \texttt{P0.25OD} & Control de \texttt{P0.25}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{26} & \texttt{P0.26OD} & Control de \texttt{P0.26}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{28:27} & --- [2] & Reserved. & NA \\
+\hline
+\texttt{29} & \texttt{P0.29OD} & Control de \texttt{P0.29}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{30} & \texttt{P0.30OD} & Control de \texttt{P0.30}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{31} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}\\
+\textit{[2] \texttt{P0.27} y \texttt{P0.28} deben configurarse mediante \texttt{I2CPADCFG} cuando se usan como bus I\textsuperscript{2}C. Los bits 27 y 28 de \texttt{PINMODE\_OD0} no tienen efecto sobre esos pines.}\\
+\textit{[3] Los pares de pines \texttt{P0.0/P0.1}, \texttt{P0.10/P0.11} y \texttt{P0.19/P0.20} pueden utilizarse como buses I\textsuperscript{2}C sobre pines estándar; en ese caso deben configurarse en \textit{open-drain} mediante \texttt{PINMODE\_OD0}.}
+
+\subsubsection{Open Drain Pin Mode select register 1 (\texttt{PINMODE\_OD1} - \texttt{0x4002 C06C})}
+Controla el modo \textit{open-drain} para los pines del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 1 (\texttt{PINMODE\_OD1}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{P1.00OD} & Control \textit{open-drain} de \texttt{P1.0}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{P1.01OD} & Control de \texttt{P1.1}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{3:2} & --- & Reserved. & NA \\
+\hline
+\texttt{4} & \texttt{P1.04OD} & Control de \texttt{P1.4}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{7:5} & --- & Reserved. & NA \\
+\hline
+\texttt{8} & \texttt{P1.08OD} & Control de \texttt{P1.8}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{9} & \texttt{P1.09OD} & Control de \texttt{P1.9}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{10} & \texttt{P1.10OD} & Control de \texttt{P1.10}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{13:11} & --- & Reserved. & NA \\
+\hline
+\texttt{14} & \texttt{P1.14OD} & Control de \texttt{P1.14}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{15} & \texttt{P1.15OD} & Control de \texttt{P1.15}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{16} & \texttt{P1.16OD[1]} & Control de \texttt{P1.16}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{17} & \texttt{P1.17OD[1]} & Control de \texttt{P1.17}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{18} & \texttt{P1.18OD} & Control de \texttt{P1.18}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{19} & \texttt{P1.19OD} & Control de \texttt{P1.19}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{20} & \texttt{P1.20OD} & Control de \texttt{P1.20}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{21} & \texttt{P1.21OD[1]} & Control de \texttt{P1.21}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{22} & \texttt{P1.22OD} & Control de \texttt{P1.22}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{23} & \texttt{P1.23OD} & Control de \texttt{P1.23}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{24} & \texttt{P1.24OD} & Control de \texttt{P1.24}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{25} & \texttt{P1.25OD} & Control de \texttt{P1.25}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{26} & \texttt{P1.26OD} & Control de \texttt{P1.26}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{27} & \texttt{P1.27OD[1]} & Control de \texttt{P1.27}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{28} & \texttt{P1.28OD} & Control de \texttt{P1.28}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{29} & \texttt{P1.29OD} & Control de \texttt{P1.29}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{30} & \texttt{P1.30OD} & Control de \texttt{P1.30}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{31} & \texttt{P1.31OD} & Control de \texttt{P1.31}. & \texttt{0} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Open Drain Pin Mode select register 2 (\texttt{PINMODE\_OD2} - \texttt{0x4002 C070})}
+Controla el modo \textit{open-drain} para los pines del puerto 2.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 2 (\texttt{PINMODE\_OD2}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{P2.00OD} & Control \textit{open-drain} de \texttt{P2.0}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{P2.01OD} & Control de \texttt{P2.1}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{P2.02OD} & Control de \texttt{P2.2}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{P2.03OD} & Control de \texttt{P2.3}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{4} & \texttt{P2.04OD} & Control de \texttt{P2.4}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{5} & \texttt{P2.05OD} & Control de \texttt{P2.5}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{6} & \texttt{P2.06OD} & Control de \texttt{P2.6}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{7} & \texttt{P2.07OD} & Control de \texttt{P2.7}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{8} & \texttt{P2.08OD} & Control de \texttt{P2.8}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{9} & \texttt{P2.09OD} & Control de \texttt{P2.9}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{10} & \texttt{P2.10OD} & Control de \texttt{P2.10}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{11} & \texttt{P2.11OD[1]} & Control de \texttt{P2.11}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{12} & \texttt{P2.12OD[1]} & Control de \texttt{P2.12}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{13} & \texttt{P2.13OD[1]} & Control de \texttt{P2.13}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{31:14} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Open Drain Pin Mode select register 3 (\texttt{PINMODE\_OD3} - \texttt{0x4002 C074})}
+Controla el modo \textit{open-drain} para los pines del puerto 3.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 3 (\texttt{PINMODE\_OD3}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{24:0} & --- & Reserved. & NA \\
+\hline
+\texttt{25} & \texttt{P3.25OD[1]} & Control \textit{open-drain} de \texttt{P3.25}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{26} & \texttt{P3.26OD[1]} & Control de \texttt{P3.26}; ver \texttt{P3.25OD}. & \texttt{0} \\
+\hline
+\texttt{31:27} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\subsubsection{Open Drain Pin Mode select register 4 (\texttt{PINMODE\_OD4} - \texttt{0x4002 C078})}
+Controla el modo \textit{open-drain} para los pines del puerto 4.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 4 (\texttt{PINMODE\_OD4}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{27:0} & --- & Reserved. & NA \\
+\hline
+\texttt{28} & \texttt{P4.28OD} & Control \textit{open-drain} de \texttt{P4.28}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{29} & \texttt{P4.29OD} & Control de \texttt{P4.29}; ver \texttt{P4.28OD}. & \texttt{0} \\
+\hline
+\texttt{31:30} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+
+\subsubsection{I2C Pin Configuration register (\texttt{I2CPADCFG} - \texttt{0x4002 C07C})}
+Este registro sólo afecta a los pines de la interfaz \texttt{I2C0} (\texttt{P0.27}/\texttt{P0.28}) y soporta distintos modos de operación del bus. Para I\textsuperscript{2}C estándar o \textit{Fast Mode}, sus cuatro bits deben permanecer en \texttt{0}. Para \textit{Fast Mode Plus}, los bits \texttt{SDADRV0} y \texttt{SCLDRV0} deben valer \texttt{1}. Si esos pines se usan fuera de I\textsuperscript{2}C, puede ser útil desactivar el filtrado de glitches y el control de \textit{slew rate} poniendo \texttt{SDAI2C0} y \texttt{SCLI2C0} en \texttt{1}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.42\textwidth}|>{\centering\arraybackslash}p{0.06\textwidth}|}
+\caption{I2C Pin Configuration register (\texttt{I2CPADCFG}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{SDADRV0} & \texttt{0} & El pin \texttt{SDA0} (\texttt{P0.27}) usa modo de conducción estándar. & \texttt{0} \\
+\hline
+\texttt{0} & \texttt{SDADRV0} & \texttt{1} & El pin \texttt{SDA0} (\texttt{P0.27}) usa modo \textit{Fast Mode Plus}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{SDAI2C0} & \texttt{0} & \texttt{SDA0} mantiene habilitados el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{SDAI2C0} & \texttt{1} & \texttt{SDA0} deshabilita el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{SCLDRV0} & \texttt{0} & El pin \texttt{SCL0} (\texttt{P0.28}) usa modo de conducción estándar. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{SCLDRV0} & \texttt{1} & El pin \texttt{SCL0} (\texttt{P0.28}) usa modo \textit{Fast Mode Plus}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{SCLI2C0} & \texttt{0} & \texttt{SCL0} mantiene habilitados el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{SCLI2C0} & \texttt{1} & \texttt{SCL0} deshabilita el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{31:4} & --- & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+
+\normalsize
