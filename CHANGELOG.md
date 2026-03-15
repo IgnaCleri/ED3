@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-03-15
+
+### Documentacion latex
+- Se reviso tecnicamente `documentacion latex/chapter3.tex` contra `datasheet/lpc17xx_um_unlocked.txt` para el `Chapter 3: LPC17xx System control`.
+- Se corrigio la seccion de reset para explicar cuando ocurre cada fuente de reinicio: reset externo, Watchdog, `Power-On Reset (POR)` y `Brown-Out Detect (BOD)`.
+- Se agrego en `3.4` una secuencia practica paso a paso del arranque posterior al reset, alineada con la `Fig 5` del datasheet.
+- Se hizo explicita la semantica de limpieza de `EXTINT`: el flag se limpia escribiendo `1` en el bit correspondiente.
+- Se reforzo la nota diagnostica de `RSID` para `BODR`, aclarando que solo es interpretable cuando `POR=0`.
+- Se agrego en `Brown-out detection` la posibilidad de vigilar el evento mediante `Raw Interrupt Status Register` cuando la interrupcion no esta habilitada.
+- Se documento en `SCS` que `OSCEN=1` solo arranca el oscilador principal si la circuiteria externa correcta esta conectada a `XTAL1` y `XTAL2`.
+- Se agrego una nota en el mapa de registros aclarando alineacion a palabra y que los valores de reset `0x0/0x00` aplican solo a bits usados.
+- Se recompilo `documentacion latex/main.pdf` para validar que el documento siga compilando despues de las correcciones del capitulo 3.
+
 ## 2026-03-12
 
 ### Documentacion latex

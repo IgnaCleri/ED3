@@ -104,6 +104,49 @@ No se versiona:
 
 Se mantienen saltos de numeracion porque el documento sigue la estructura del datasheet original.
 
+## Proceso documentado para el capitulo 3
+
+Se deja registrado el trabajo de revision y correccion aplicado a `Chapter 3: LPC17xx System control`.
+
+### Objetivo editorial
+
+- Mantener formato de consulta rapida.
+- Preservar la estructura del datasheet en las subsecciones `3.1` a `3.7.1`.
+- Corregir simplificaciones que podian inducir errores de firmware, sobre todo en reset, `RSID`, `BOD`, `EXTINT` y `SCS`.
+- Agregar solo las notas practicas que ayuden a interpretar la `Fig 5` y a usar correctamente los registros.
+
+### Cambios aplicados
+
+1. Se reviso `documentacion latex/chapter3.tex` contra `datasheet/lpc17xx_um_unlocked.txt`.
+2. En `3.4` se ampliaron las fuentes de reset para explicar cuando ocurre cada una:
+   - reset externo por pin `RESET`,
+   - reset por Watchdog,
+   - `Power-On Reset (POR)`,
+   - `Brown-Out Detect (BOD)`.
+3. En esa misma seccion se agrego una secuencia practica de arranque posterior al reset basada en la `Fig 5`:
+   - subida de `VDD(REG)(3V3)`,
+   - arranque del `IRC`,
+   - estabilizacion del clock,
+   - liberacion sincronizada del reset,
+   - temporizadores de wake-up,
+   - acceso a flash,
+   - ejecucion de boot ROM,
+   - inicio de `user code`.
+4. Se preciso la nota de `RSID` para dejar claro que `BODR` solo se interpreta con `POR=0`.
+5. Se agrego en `Brown-out detection` que el evento tambien puede observarse por `Raw Interrupt Status Register` si la interrupcion no esta habilitada.
+6. Se corrigio `EXTINT` para indicar explicitamente que el flag se limpia escribiendo `1`.
+7. Se reforzo la advertencia de reconfiguracion de `EXTMODE` y `EXTPOLAR`, indicando deshabilitar NVIC y limpiar `EXTINT` antes de rehabilitar la interrupcion.
+8. Se agrego en `SCS` la condicion de hardware externo en `XTAL1` y `XTAL2` para que `OSCEN=1` produzca el arranque real del oscilador principal.
+9. Se agrego una nota al mapa de registros aclarando alineacion a palabra y el alcance de los valores de reset sobre bits usados.
+
+### QA aplicada
+
+1. Se compilo `documentacion latex/main.tex` con el script de la skill.
+2. Resultado: compilacion exitosa.
+3. Advertencia observada:
+   - MiKTeX no pudo escribir su log en `AppData` por acceso denegado.
+4. Esa advertencia no impidio generar el PDF ni invalido la compilacion del documento.
+
 ## Proceso documentado para el capitulo 8
 
 Se deja registrado el flujo concreto que se uso para integrar `Chapter 8: LPC17xx Pin connect block` al apunte.
