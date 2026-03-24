@@ -4,81 +4,83 @@ Espacio de trabajo para la materia Electronica Digital 3, orientado al desarroll
 
 ## Objetivo del repositorio
 
-- Centralizar practicas, TP y codigo hecho en clase.
-- Documentar decisiones tecnicas del entorno (compilacion, flasheo, debug).
-- Mantener ejemplos de C de referencia para consolidar base de lenguaje.
+- Separar con claridad la documentacion del codigo.
+- Centralizar practicas, ejercicios, proyectos y material de cursada.
+- Mantener referencias tecnicas, codigo vendor y artefactos sin mezclar responsabilidades.
 
 ## Estructura actual
 
-- `datasheet/`: documentacion tecnica (incluye `lpc17xx_um_unlocked.pdf`).
-- `repo recursos c/C-Seminars/`: ejemplos introductorios de C por tema (`001` a `015`).
-- `tps/`: espacio para trabajos practicos.
-- `hecho en clase/`: ejercicios y avances de cursada.
-- `codex-made/`: material generado durante las sesiones de trabajo.
-- `documentacion latex/`: informe tecnico LPC1769 en LaTeX (fuentes, figuras y script de extraccion).
-- `.vscode/`: configuraciones locales del editor.
+- `docs/`: documentacion del repositorio.
+  - `docs/latex/`: apunte tecnico reproducible en LaTeX y PDF.
+  - `docs/clases/`: PDFs y material de consulta de cursada.
+  - `docs/referencia/`: datasheets y manuales base del microcontrolador y la placa.
+- `codigo/`: codigo propio del workspace.
+  - `codigo/clases/`: codigo hecho en clase.
+  - `codigo/ejercicios/`: ejercicios cortos o material introductorio.
+  - `codigo/proyectos/`: proyectos mas armados y practicas bare-metal.
+  - `codigo/tps/`: trabajos practicos formales.
+- `vendor/`: librerias externas, forks y snapshots de terceros.
+- `artifacts/`: logs, capturas temporales y salidas generadas de soporte.
 
-## Convencion para nuevos ejercicios
+## Guia de clasificacion
 
-- Crear carpetas numeradas y progresivas por tema cuando aplique (ejemplo: `016/nombre_tema.c`).
-- Usar nombres de archivo en minuscula con guiones bajos.
-- Compilar siempre con banderas de advertencia:
+- Si es fuente mantenida por nosotros, va en `codigo/`.
+- Si es referencia o manual, va en `docs/referencia/`.
+- Si es documentacion reproducible, va en `docs/latex/`.
+- Si es libreria externa o un fork, va en `vendor/`.
+- Si es una salida generada, va en `artifacts/` o se ignora por `.gitignore`.
+
+## Convenciones para codigo
+
+- Lenguaje principal: C.
+- Usar nombres de archivo en minuscula con guiones bajos cuando se agreguen archivos nuevos.
+- Compilar con banderas de advertencia como minimo:
 
 ```powershell
 gcc -Wall -Wextra -pedantic "ruta/al/archivo.c" -o programa
 ```
 
-## Estado inicial (marzo 2026)
+- Ubicar cada trabajo segun su objetivo:
+  - `codigo/clases/` para avances de cursada.
+  - `codigo/ejercicios/` para practicas cortas.
+  - `codigo/proyectos/` para proyectos con estructura propia.
+  - `codigo/tps/` para entregas formales.
 
-- El repositorio no tiene un sistema de build global (`Makefile` o `CMakeLists.txt`).
-- Los ejemplos existentes en `C-Seminars` son de C general, no especificos de LPC1769.
-- Ya esta disponible la referencia principal del micro en `datasheet/`.
+## Flujo de documentacion tecnica
 
-## Plan de arranque sugerido para ED3
+1. Usar las referencias tecnicas desde `docs/referencia/`.
+2. Mantener el apunte reproducible en `docs/latex/`.
+3. Registrar cambios relevantes en [CHANGELOG.md](CHANGELOG.md).
 
-1. Definir toolchain embebido (compilador, linker, startup, CMSIS).
-2. Crear un "proyecto minimo" para LPC1769 (blink por GPIO).
-3. Documentar flujo completo: compilar, generar binario, grabar y debuggear.
-4. Estandarizar estructura de practicas (`tps/` y `hecho en clase/`).
+### Comandos base
 
-## Configuracion acordada (8 de marzo de 2026)
-
-- Microcontrolador/placa objetivo: **LPC1769** (asumido en placa de la familia LPCXpresso de NXP; pendiente confirmar modelo exacto).
-- Entorno principal de debug: **MCUXpresso IDE**.
-- Flujo de desarrollo adicional: asistencia y generacion de codigo con **Codex** dentro de este repositorio.
-- Carpeta de trabajo conjunta con Codex: **`codex-made/`**.
-- Uso de otras carpetas:
-  - `tps/` para trabajos practicos.
-  - `hecho en clase/` para avances de cursada.
-- Alcance inicial: **C bare-metal** (RTOS se evaluara mas adelante).
-
-## Flujo de documentacion tecnica (LPC1769)
-
-1. Extraer y recortar figuras desde el datasheet:
+Extraer y recortar figuras desde el datasheet:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "documentacion latex/scripts/extract_figures_from_datasheet.ps1" -WorkspaceRoot "."
+powershell -ExecutionPolicy Bypass -File "docs/latex/scripts/extract_figures_from_datasheet.ps1" -WorkspaceRoot "."
 ```
 
-2. Compilar el informe:
+Compilar el informe:
 
 ```powershell
-pdflatex -interaction=nonstopmode -output-directory "documentacion latex" "documentacion latex/main.tex"
+pdflatex -interaction=nonstopmode -output-directory "docs/latex" "docs/latex/main.tex"
 ```
 
-La trazabilidad de figuras se mantiene en `documentacion latex/figure_inventory.csv`.
+La trazabilidad de figuras se mantiene en `docs/latex/figure_inventory.csv` cuando ese archivo forme parte del flujo activo.
 
-## Politica de versionado para LaTeX (desde 2026-03-09)
+## Vendor y dependencias externas
 
-- Se prioriza versionar **fuentes reproducibles y assets**.
-- Se versionan: `main.tex`, `chapter*.tex`, `README.md`, `scripts/`, `images/`, `figure_inventory.csv`.
-- `main.pdf` solo se versiona cuando corresponde a una entrega.
-- No se versionan artefactos intermedios (`*.aux`, `*.log`, `*.toc`), previews/verificaciones como `qa_png/` ni temporales de `tmp/`.
+- `vendor/CMSISv2p00_LPC17xx2/`: base CMSIS/drivers para LPC17xx.
+- `vendor/LPC17xx-CMSIS-Driver-Enhancement/`: fork o variante modernizada con tests y documentacion propia.
 
-## Historial de cambios
+La deduplicacion entre copias CMSIS queda planificada para una etapa posterior. En esta reorganizacion solo se separo el codigo externo del codigo propio.
+
+## Estado del repo
+
+- No hay un sistema de build global unico (`Makefile` o `CMakeLists.txt`) en la raiz.
+- El flujo principal de debug sigue dependiendo de MCUXpresso IDE para algunos proyectos.
+- El apunte LaTeX y los proyectos bare-metal del LPC1769 son hoy los ejes mas consolidados del repositorio.
+
+## Historial
 
 - Ver [CHANGELOG.md](CHANGELOG.md) para el detalle de cambios realizados.
-
----
-
-Siguiente paso recomendado: crear en `codex-made/` un proyecto base LPC1769 con plantilla minima (`main.c`, startup/linker y guia de compilacion/debug).

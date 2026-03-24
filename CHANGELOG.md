@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-03-24
+
+### Reorganizacion de estructura
+- Se reorganizo la raiz del repositorio para separar documentacion, codigo, vendor y artifacts.
+- `documentacion latex/` paso a `docs/latex/`.
+- `pdfs clases/` paso a `docs/clases/`.
+- `datasheet/` paso a `docs/referencia/`.
+- `hecho en clase/clase1/` paso a `codigo/clases/clase1/`.
+- `codex-made/` se integro en `codigo/proyectos/`.
+- `CMSISv2p00_LPC17xx2/` y `LPC17xx-CMSIS-Driver-Enhancement/` pasaron a `vendor/`.
+- Los logs de RTOS y el soporte local de MCUXpresso pasaron a `artifacts/`.
+- Se actualizaron `README.md`, `.gitignore` y la documentacion interna para reflejar la nueva taxonomia.
+
 ## 2026-03-15
 
 ### Documentacion latex

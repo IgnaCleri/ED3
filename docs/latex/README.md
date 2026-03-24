@@ -4,7 +4,7 @@ Este documento resume el proceso actual para estudiar una seccion del datasheet,
 
 ## Flujo de trabajo actual
 
-1. Leer la seccion objetivo en `datasheet/lpc17xx_um_unlocked.pdf` y `datasheet/lpc17xx_um_unlocked.txt`.
+1. Leer la seccion objetivo en `docs/referencia/lpc17xx_um_unlocked.pdf` y `docs/referencia/lpc17xx_um_unlocked.txt`.
 2. Explicar y discutir el contenido primero en chat.
 3. Si el usuario pide un capitulo completo, reconstruir primero su estructura y recorrerlo por subseccion o bloque.
 4. Explicar una subseccion o bloque por vez y abrir checkpoint de dudas antes de pasar al siguiente.
@@ -34,15 +34,15 @@ Este documento resume el proceso actual para estudiar una seccion del datasheet,
 - No reutilizar capturas de pagina completas cuando la figura queda chica o pierde contraste.
 - Preferir recortes dedicados en alta resolucion desde el PDF fuente.
 - Si ya existe un recorte HD validado para esa figura, reutilizarlo antes de generar uno nuevo.
-- Guardar la figura final en `documentacion latex/images/`.
-- Registrar coordenadas y DPI en `documentacion latex/figure_inventory.csv`.
+- Guardar la figura final en `docs/latex/images/`.
+- Registrar coordenadas y DPI en `docs/latex/figure_inventory.csv`.
 
 ### Metodo recomendado
 
 Usar el script HD de la skill:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\Usuario\.codex\skills\latex-pdf-study-assistant\scripts\capture_pdf_region_hd.ps1" -WorkspaceRoot "C:\Users\Usuario\Documents\Ignacio\Facultad\TercerAño\ED3" -Page <pagina> -X <x> -Y <y> -W <w> -H <h> -OutputImage "documentacion latex/images/<archivo>.png"
+powershell -ExecutionPolicy Bypass -File "C:\Users\Usuario\.codex\skills\latex-pdf-study-assistant\scripts\capture_pdf_region_hd.ps1" -WorkspaceRoot "C:\Users\Usuario\Documents\Ignacio\Facultad\TercerAño\ED3" -Page <pagina> -X <x> -Y <y> -W <w> -H <h> -OutputImage "docs/latex/images/<archivo>.png"
 ```
 
 ### Figura 7.1 actual
@@ -117,7 +117,7 @@ Se deja registrado el trabajo de revision y correccion aplicado a `Chapter 3: LP
 
 ### Cambios aplicados
 
-1. Se reviso `documentacion latex/chapter3.tex` contra `datasheet/lpc17xx_um_unlocked.txt`.
+1. Se reviso `docs/latex/chapter3.tex` contra `docs/referencia/lpc17xx_um_unlocked.txt`.
 2. En `3.4` se ampliaron las fuentes de reset para explicar cuando ocurre cada una:
    - reset externo por pin `RESET`,
    - reset por Watchdog,
@@ -141,7 +141,7 @@ Se deja registrado el trabajo de revision y correccion aplicado a `Chapter 3: LP
 
 ### QA aplicada
 
-1. Se compilo `documentacion latex/main.tex` con el script de la skill.
+1. Se compilo `docs/latex/main.tex` con el script de la skill.
 2. Resultado: compilacion exitosa.
 3. Advertencia observada:
    - MiKTeX no pudo escribir su log en `AppData` por acceso denegado.
@@ -166,11 +166,11 @@ Se deja registrado el flujo concreto que se uso para integrar `Chapter 8: LPC17x
 
 ### Implementacion usada
 
-1. Se relevo el `Chapter 8` en `datasheet/lpc17xx_um_unlocked.txt` y se reconstruyo su estructura completa:
+1. Se relevo el `Chapter 8` en `docs/referencia/lpc17xx_um_unlocked.txt` y se reconstruyo su estructura completa:
    - `8.1` a `8.5.21`,
    - tablas `74` a `99`,
    - notas especiales para `P0.27`, `P0.28`, `P0.29` y `P0.30`.
-2. Se separo el contenido nuevo en `documentacion latex/chapter8.tex`.
+2. Se separo el contenido nuevo en `docs/latex/chapter8.tex`.
 3. `main.tex` paso a incluir ese archivo con `\input{chapter8.tex}` para evitar que el archivo principal siga creciendo de forma monolitica.
 4. Se usaron `longtable` y tablas compactas para que los registros extensos entren en pagina sin perder filas.
 5. Se normalizaron algunas inconsistencias de la transcripcion TXT cuando el simbolo del registro dejaba claro el valor correcto:
@@ -189,7 +189,7 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\Usuario\.codex\skills\latex-p
 
 2. Se verifico que el indice del PDF incluyera el nuevo capitulo 8.
 3. El capitulo quedo ubicado entre las paginas `15` y `26` del PDF generado.
-4. Se renderizaron paginas afectadas a `documentacion latex/qa_png/`.
+4. Se renderizaron paginas afectadas a `artifacts/qa_png/`.
 5. Se revisaron visualmente paginas representativas del bloque nuevo, en particular:
    - `page_20-20.png`,
    - `page_26-26.png`.
@@ -200,9 +200,9 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\Usuario\.codex\skills\latex-p
 
 ### Archivos tocados por este capitulo
 
-- `documentacion latex/main.tex`
-- `documentacion latex/chapter8.tex`
-- `documentacion latex/main.pdf`
+- `docs/latex/main.tex`
+- `docs/latex/chapter8.tex`
+- `docs/latex/main.pdf`
 
 ### Criterio para capitulos futuros largos
 
