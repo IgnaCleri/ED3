@@ -209,3 +209,77 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\Usuario\.codex\skills\latex-p
 - Si un capitulo nuevo agrega muchas tablas o registros, preferir archivo separado e inclusion con `\input{...}`.
 - Mantener `main.tex` como orquestador del documento y no como unico contenedor de todo el contenido.
 - Hacer QA por paginas representativas cuando el bloque agregado supera 5 paginas.
+
+## Proceso documentado para el capitulo 6
+
+Se deja registrado el flujo real usado para integrar `Chapter 6: LPC17xx Nested Vectored Interrupt Controller (NVIC)` al apunte.
+
+### Objetivo editorial
+
+- Mantener formato de consulta rapida.
+- Preservar la numeracion real del datasheet en el bloque `6.1` a `6.12`.
+- Incluir completas las tablas `50` a `71`.
+- Traducir las tablas al espanol conservando nombres tecnicos de registros, bits y senales.
+- Incorporar notas tecnicas surgidas de la discusion conceptual previa.
+- No agregar figura nueva en esta primera version del capitulo.
+
+### Implementacion usada
+
+1. Se relevo el `Chapter 6` en `docs/referencia/lpc17xx_um_unlocked.txt`, usando tambien `docs/referencia/lpc17xx_um_unlocked.pdf` como apoyo de lectura.
+2. Antes de editar LaTeX, se explico el contenido en chat por bloques didacticos:
+   - panorama del NVIC,
+   - fuentes de interrupcion y tabla vectorial,
+   - estados `enabled`, `pending` y `active`,
+   - prioridades y arbitraje,
+   - remapeo de tabla vectorial con `VTOR`,
+   - disparo por software con `STIR`.
+3. Se consolidaron como notas tecnicas del capitulo las aclaraciones surgidas en esa discusion:
+   - jerarquia conceptual entre `Reset`, `NMI`, `HardFault`, excepciones del sistema e `IRQ`,
+   - diferencia entre `Interrupt ID`, `Exception Number` y `Vector Offset`,
+   - diferencia entre `enabled`, `pending` y `active`,
+   - manejo automatico de `active` por el NVIC/Cortex-M3,
+   - comportamiento de preemption sin volver la ISR interrumpida a `pending`,
+   - uso practico de `ISPR` y diferencia con `STIR`,
+   - aclaracion de que la tabla vectorial guarda direcciones de handlers, no el codigo del handler.
+4. Se creo `docs/latex/chapter6.tex` como archivo separado para evitar seguir haciendo crecer `main.tex`.
+5. Se integro el capitulo en `docs/latex/main.tex` con `\input{chapter6.tex}` antes del bloque actual de capitulos 8 y 9.
+6. Se mantuvo el criterio editorial del apunte:
+   - narrativa breve,
+   - tablas como fuente principal de consulta,
+   - notas tecnicas solo donde ayudan a interpretar el NVIC o a evitar errores de firmware.
+7. Se incluyeron completas las tablas `50` a `71`, junto con una nota editorial sobre la inconsistencia del datasheet en `Table 59`.
+
+### QA aplicada
+
+1. Se compilo `docs/latex/main.tex` con `tectonic`:
+
+```bash
+tectonic --keep-logs --keep-intermediates --outdir docs/latex docs/latex/main.tex
+```
+
+2. Resultado: compilacion exitosa y generacion de `docs/latex/main.pdf`.
+3. El indice del PDF incluyo el nuevo Chapter 6 en la posicion correcta.
+4. El capitulo quedo ubicado entre las paginas `16` y `31` del PDF generado.
+5. Se renderizaron paginas representativas a `artifacts/qa/chapter6/` para control visual.
+6. Se revisaron visualmente, como minimo, estas paginas:
+   - apertura del capitulo,
+   - `Table 50`,
+   - cierre de `Table 50` y bloque `VTOR`,
+   - `Table 51`,
+   - bloque `ISER/ICER`,
+   - bloque `IPR`,
+   - cierre con `STIR`.
+7. Se observaron advertencias `Overfull \hbox` y `Underfull \hbox` durante la compilacion, pero no se detectaron fallas visuales graves en las paginas inspeccionadas del Chapter 6.
+
+### Archivos tocados por este capitulo
+
+- `docs/latex/main.tex`
+- `docs/latex/chapter6.tex`
+- `docs/latex/main.pdf`
+- `artifacts/qa/chapter6/`
+
+### Notas tecnicas o decisiones editoriales
+
+- `Chapter 6` se resolvio sin figuras nuevas porque el contenido quedo suficientemente cubierto con tablas y notas tecnicas.
+- Se mantuvo la estructura general del manual original para que el lector pueda cruzar facil el apunte con el datasheet.
+- `tectonic` quedo registrado como compilador efectivo usado en esta integracion, sin invalidar otros flujos historicos del documento.

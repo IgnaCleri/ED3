@@ -52,6 +52,14 @@ gcc -Wall -Wextra -pedantic "ruta/al/archivo.c" -o programa
 2. Mantener el apunte reproducible en `docs/latex/`.
 3. Registrar cambios relevantes en [CHANGELOG.md](CHANGELOG.md).
 
+El apunte LaTeX ya incorpora el `Chapter 6` del NVIC. Para capitulos largos, el flujo vigente combina:
+- discusion conceptual previa del capitulo,
+- edicion en archivo separado dentro de `docs/latex/`,
+- compilacion del PDF con `tectonic`,
+- QA visual por capturas temporales en `artifacts/`.
+
+El detalle operativo de ese proceso queda documentado en `docs/latex/README.md`.
+
 ### Comandos base
 
 Extraer y recortar figuras desde el datasheet:

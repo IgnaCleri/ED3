@@ -1,0 +1,967 @@
+\setcounter{section}{5}
+\section{LPC17xx Nested Vectored Interrupt Controller (NVIC)}
+
+\subsection{Resumen del bloque}
+\begin{itemize}
+  \item El \texttt{NVIC} es parte integral del n\'ucleo ARM Cortex-M3 y centraliza la atenci\'on de excepciones del sistema e interrupciones de perif\'ericos.
+  \item En el LPC17xx soporta \textbf{35 interrupciones vectorizadas}, \textbf{32 niveles de prioridad programables}, \textbf{tabla vectorial reubicable}, \textbf{NMI} y \textbf{disparo de IRQ por software}.
+  \item Los registros clave del bloque son \texttt{ISER0/1}, \texttt{ICER0/1}, \texttt{ISPR0/1}, \texttt{ICPR0/1}, \texttt{IABR0/1}, \texttt{IPR0..8} y \texttt{STIR}.
+\end{itemize}
+
+\paragraph{Nota t\'ecnica}
+En jerarqu\'ia conceptual, \textbf{Reset} queda por encima de todo, luego \textbf{NMI}, luego \textbf{HardFault} y despu\'es el resto de excepciones configurables e \texttt{IRQ} normales. \texttt{IRQ} significa \textit{Interrupt Request}: una solicitud de interrupci\'on perif\'erica ordinaria manejada por el \texttt{NVIC}. \texttt{NMI} es una excepci\'on especial no enmascarable, no una \texttt{IRQ} perif\'erica com\'un.
+
+\subsection{C\'omo leer este cap\'itulo}
+\begin{itemize}
+  \item \textbf{Interrupt ID:} n\'umero l\'ogico de la \texttt{IRQ} perif\'erica dentro del \texttt{NVIC}.
+  \item \textbf{Exception Number:} posici\'on de esa \texttt{IRQ} dentro de la tabla completa de excepciones del Cortex-M3. Para las \texttt{IRQ} externas del LPC17xx, empieza en \texttt{16}.
+  \item \textbf{Vector Offset:} desplazamiento en bytes de la entrada dentro de la tabla vectorial. En pr\'actica, \texttt{Vector Offset = Exception Number * 4}.
+  \item La tabla vectorial no guarda el c\'odigo del handler sino la \textbf{direcci\'on} de entrada del handler. Cuando una excepci\'on o \texttt{IRQ} es aceptada, el n\'ucleo lee esa direcci\'on y salta a ella.
+\end{itemize}
+
+\paragraph{Estados de una interrupci\'on}
+\begin{itemize}
+  \item \textbf{enabled:} la l\'inea est\'a habilitada para ser atendida por el \texttt{NVIC}.
+  \item \textbf{pending:} existe una solicitud de atenci\'on esperando turno.
+  \item \textbf{active:} la interrupci\'on ya fue aceptada por el n\'ucleo y su \texttt{ISR} est\'a siendo atendida o forma parte del contexto activo anidado.
+\end{itemize}
+
+\paragraph{Nota t\'ecnica}
+En flujo normal, el firmware suele habilitar la \texttt{IRQ} y limpiar la \textbf{causa real} en el perif\'erico dentro de la \texttt{ISR}. El estado \texttt{active} lo maneja autom\'aticamente el Cortex-M3/\texttt{NVIC}. El estado \texttt{pending} puede originarse por hardware o forzarse por software con \texttt{ISPR}. Si una \texttt{ISR} de mayor prioridad preempta a otra, la primera no ``vuelve'' a \texttt{pending}: queda suspendida y luego se retoma.
+
+\subsection{Fuentes de interrupci\'on}
+\scriptsize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+
+\begin{longtable}{|>{\centering\arraybackslash}p{0.07\textwidth}|>{\centering\arraybackslash}p{0.10\textwidth}|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.40\textwidth}|}
+\caption{Conexi\'on de fuentes de interrupci\'on al Vectored Interrupt Controller (Table 50)} \\
+\hline
+\textbf{Interrupt ID} & \textbf{Exception Number} & \textbf{Vector Offset} & \textbf{Funci\'on} & \textbf{Flag(s)} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Interrupt ID} & \textbf{Exception Number} & \textbf{Vector Offset} & \textbf{Funci\'on} & \textbf{Flag(s)} \\
+\hline
+\endhead
+0 & 16 & \texttt{0x40} & \texttt{WDT} & Interrupci\'on de watchdog (\texttt{WDINT}). \\
+\hline
+1 & 17 & \texttt{0x44} & \texttt{Timer 0} & Match 0--1 (\texttt{MR0}, \texttt{MR1}). \\
+\hline
+2 & 18 & \texttt{0x48} & \texttt{Timer 1} & Match 0--2 (\texttt{MR0}, \texttt{MR1}, \texttt{MR2}); Capture 0--1 (\texttt{CR0}, \texttt{CR1}). \\
+\hline
+3 & 19 & \texttt{0x4C} & \texttt{Timer 2} & Match 0--3; Capture 0--1. \\
+\hline
+4 & 20 & \texttt{0x50} & \texttt{Timer 3} & Match 0--3; Capture 0--1. \\
+\hline
+5 & 21 & \texttt{0x54} & \texttt{UART0} & \texttt{RLS}, \texttt{THRE}, \texttt{RDA}, \texttt{CTI}, \texttt{ABEO}, \texttt{ABTO}. \\
+\hline
+6 & 22 & \texttt{0x58} & \texttt{UART1} & \texttt{RLS}, \texttt{THRE}, \texttt{RDA}, \texttt{CTI}, cambio de control de m\'odem, \texttt{ABEO}, \texttt{ABTO}. \\
+\hline
+7 & 23 & \texttt{0x5C} & \texttt{UART2} & \texttt{RLS}, \texttt{THRE}, \texttt{RDA}, \texttt{CTI}, \texttt{ABEO}, \texttt{ABTO}. \\
+\hline
+8 & 24 & \texttt{0x60} & \texttt{UART3} & \texttt{RLS}, \texttt{THRE}, \texttt{RDA}, \texttt{CTI}, \texttt{ABEO}, \texttt{ABTO}. \\
+\hline
+9 & 25 & \texttt{0x64} & \texttt{PWM1} & Match 0--6 de \texttt{PWM1}; Capture 0--1 de \texttt{PWM1}. \\
+\hline
+10 & 26 & \texttt{0x68} & \texttt{I2C0} & \texttt{SI} (cambio de estado). \\
+\hline
+11 & 27 & \texttt{0x6C} & \texttt{I2C1} & \texttt{SI} (cambio de estado). \\
+\hline
+12 & 28 & \texttt{0x70} & \texttt{I2C2} & \texttt{SI} (cambio de estado). \\
+\hline
+13 & 29 & \texttt{0x74} & \texttt{SPI} & \texttt{SPIF} (flag de interrupci\'on SPI), \texttt{MODF} (modo fault). \\
+\hline
+14 & 30 & \texttt{0x78} & \texttt{SSP0} & \texttt{Tx FIFO half empty}, \texttt{Rx FIFO half full}, \texttt{Rx Timeout}, \texttt{Rx Overrun}. \\
+\hline
+15 & 31 & \texttt{0x7C} & \texttt{SSP1} & \texttt{Tx FIFO half empty}, \texttt{Rx FIFO half full}, \texttt{Rx Timeout}, \texttt{Rx Overrun}. \\
+\hline
+16 & 32 & \texttt{0x80} & \texttt{PLL0 (Main PLL)} & Lock de \texttt{PLL0} (\texttt{PLOCK0}). \\
+\hline
+17 & 33 & \texttt{0x84} & \texttt{RTC} & Incremento de contador (\texttt{RTCCIF}). \\
+\hline
+18 & 34 & \texttt{0x88} & \texttt{External Interrupt} & Interrupci\'on externa 0 (\texttt{EINT0}). \\
+\hline
+19 & 35 & \texttt{0x8C} & \texttt{External Interrupt} & Interrupci\'on externa 1 (\texttt{EINT1}). \\
+\hline
+20 & 36 & \texttt{0x90} & \texttt{External Interrupt} & Interrupci\'on externa 2 (\texttt{EINT2}). \\
+\hline
+21 & 37 & \texttt{0x94} & \texttt{External Interrupt} & \texttt{RTCALF} e interrupci\'on externa 3 (\texttt{EINT3}). Nota: \texttt{EINT3} comparte canal con interrupciones GPIO. \\
+\hline
+22 & 38 & \texttt{0x98} & \texttt{ADC} & Fin de conversi\'on del convertidor A/D. \\
+\hline
+23 & 39 & \texttt{0x9C} & \texttt{BOD} & Detecci\'on de \textit{brown-out}. \\
+\hline
+24 & 40 & \texttt{0xA0} & \texttt{USB} & \texttt{USB\_INT\_REQ\_LP}, \texttt{USB\_INT\_REQ\_HP}, \texttt{USB\_INT\_REQ\_DMA}. \\
+\hline
+25 & 41 & \texttt{0xA4} & \texttt{CAN} & \texttt{CAN Common}, \texttt{CAN0 Tx}, \texttt{CAN0 Rx}, \texttt{CAN1 Tx}, \texttt{CAN1 Rx}. \\
+\hline
+26 & 42 & \texttt{0xA8} & \texttt{GPDMA} & \texttt{IntStatus} de canal DMA 0, \texttt{IntStatus} de canal DMA 1, \texttt{irq}, \texttt{dmareq1}, \texttt{dmareq2}. \\
+\hline
+27 & 43 & \texttt{0xAC} & \texttt{I2S} & Interrupci\'on del bloque \texttt{I2S}. \\
+\hline
+28 & 44 & \texttt{0xB0} & \texttt{Ethernet} & \texttt{WakeupInt}, \texttt{SoftInt}, \texttt{TxDoneInt}, \texttt{TxFinishedInt}, \texttt{TxErrorInt}, \texttt{TxUnderrunInt}, \texttt{RxDoneInt}, \texttt{RxFinishedInt}, \texttt{RxErrorInt}, \texttt{RxOverrunInt}. \\
+\hline
+29 & 45 & \texttt{0xB4} & \texttt{Repetitive Interrupt Timer} & \texttt{RITINT}. \\
+\hline
+30 & 46 & \texttt{0xB8} & \texttt{Motor Control PWM} & \texttt{IPER[2:0]}, \texttt{IPW[2:0]}, \texttt{ICAP[2:0]}, \texttt{FES}. \\
+\hline
+31 & 47 & \texttt{0xBC} & \texttt{Quadrature Encoder} & \texttt{INX\_Int}, \texttt{TIM\_Int}, \texttt{VELC\_Int}, \texttt{DIR\_Int}, \texttt{ERR\_Int}, \texttt{ENCLK\_Int}, \texttt{POS0\_Int}, \texttt{POS1\_Int}, \texttt{POS2\_Int}, \texttt{REV\_Int}, \texttt{POS0REV\_Int}, \texttt{POS1REV\_Int}, \texttt{POS2REV\_Int}. \\
+\hline
+32 & 48 & \texttt{0xC0} & \texttt{PLL1 (USB PLL)} & Lock de \texttt{PLL1} (\texttt{PLOCK1}). \\
+\hline
+33 & 49 & \texttt{0xC4} & \texttt{USB Activity Interrupt} & \texttt{USB\_NEED\_CLK}. \\
+\hline
+34 & 50 & \texttt{0xC8} & \texttt{CAN Activity Interrupt} & \texttt{CAN1WAKE}, \texttt{CAN2WAKE}. \\
+\hline
+\end{longtable}
+\normalsize
+
+\paragraph{Nota t\'ecnica}
+La \texttt{Table 50} no enumera \texttt{NMI} como una \texttt{IRQ} perif\'erica normal porque \texttt{NMI} es una excepci\'on especial del Cortex-M3. Si se usa desde se\~nal externa, debe conectarse la funci\'on \texttt{NMI} al pin \texttt{P2.10 / EINT0n / NMI}; con esa funci\'on activa, un nivel l\'ogico alto en el pin dispara la \texttt{NMI}.
+
+\subsection{Remapeo de tabla vectorial}
+\begin{itemize}
+  \item El Cortex-M3 permite reubicar la tabla de vectores en otra direcci\'on del mapa de memoria mediante \texttt{VTOR} (\textit{Vector Table Offset Register}).
+  \item La tabla puede ubicarse en el primer \textbf{1 GB} del espacio de direcciones del Cortex-M3.
+  \item En la familia LPC17xx debe alinearse a \textbf{256 palabras} (\textbf{1024 bytes}).
+  \item Desde el punto de vista pr\'actico, \texttt{VTOR} define la \textbf{base} desde la cual el n\'ucleo lee las direcciones de handlers.
+\end{itemize}
+
+\paragraph{Nota t\'ecnica}
+La tabla vectorial no contiene el c\'odigo del handler sino la \textbf{direcci\'on} de entrada del handler. Si el firmware mueve \texttt{VTOR}, la nueva tabla debe existir realmente en esa memoria y tener entradas v\'alidas; de lo contrario, el n\'ucleo saltar\'a a direcciones err\'oneas cuando ocurra una excepci\'on o una \texttt{IRQ}.
+
+\paragraph{Uso pr\'actico}
+Los usos m\'as comunes de \texttt{VTOR} son \textbf{bootloaders}, esquemas con \textbf{tabla vectorial en SRAM} y configuraciones donde el flujo de arranque necesita cambiar qu\'e imagen de firmware atiende las interrupciones.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Ejemplos de remapeo de tabla vectorial a partir de \texttt{VTOR}}
+  \begin{tabularx}{0.96\textwidth}{|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Ubicaci\'on} & \textbf{Valor en \texttt{VTOR}} & \textbf{Interpretaci\'on} \\
+    \hline
+    SRAM local & \texttt{0x1000 0000} & La tabla queda al comienzo de la SRAM local. El bit 29 vale \texttt{0}; en la explicaci\'on de ARM esto cae en ``code space'', aunque en la pr\'actica conviene pensarlo como parte de la direcci\'on. \\
+    \hline
+    AHB SRAM & \texttt{0x2007 C000} & La tabla queda al comienzo de la AHB SRAM. El bit 29 vale \texttt{1}; ARM lo describe como ``SRAM space'', pero para firmware conviene tratarlo simplemente como base de direcci\'on. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{Mapa de registros}
+\scriptsize
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.36\textwidth}|>{\centering\arraybackslash}p{0.09\textwidth}|>{\centering\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\caption{Mapa de registros del NVIC (Table 51)} \\
+\hline
+\textbf{Name} & \textbf{Description} & \textbf{Access} & \textbf{Reset} & \textbf{Address} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{Description} & \textbf{Access} & \textbf{Reset} & \textbf{Address} \\
+\hline
+\endhead
+\texttt{ISER0} a \texttt{ISER1} & Registros de \textit{Interrupt Set-Enable}. Permiten habilitar interrupciones y leer el estado de habilitaci\'on de funciones perif\'ericas espec\'ificas. & R/W & 0 & \texttt{ISER0 - 0xE000 E100}; \texttt{ISER1 - 0xE000 E104}. \\
+\hline
+\texttt{ICER0} a \texttt{ICER1} & Registros de \textit{Interrupt Clear-Enable}. Permiten deshabilitar interrupciones y leer el estado de habilitaci\'on de funciones perif\'ericas espec\'ificas. & R/W & 0 & \texttt{ICER0 - 0xE000 E180}; \texttt{ICER1 - 0xE000 E184}. \\
+\hline
+\texttt{ISPR0} a \texttt{ISPR1} & Registros de \textit{Interrupt Set-Pending}. Permiten cambiar el estado de la interrupci\'on a \texttt{pending} y leer el estado de pendiente para funciones perif\'ericas espec\'ificas. & R/W & 0 & \texttt{ISPR0 - 0xE000 E200}; \texttt{ISPR1 - 0xE000 E204}. \\
+\hline
+\texttt{ICPR0} a \texttt{ICPR1} & Registros de \textit{Interrupt Clear-Pending}. Permiten cambiar el estado de la interrupci\'on a ``not pending'' y leer el estado de pendiente para funciones perif\'ericas espec\'ificas. & R/W & 0 & \texttt{ICPR0 - 0xE000 E280}; \texttt{ICPR1 - 0xE000 E284}. \\
+\hline
+\texttt{IABR0} a \texttt{IABR1} & Registros de \textit{Interrupt Active Bit}. Permiten leer el estado activo actual para funciones perif\'ericas espec\'ificas. & RO & 0 & \texttt{IABR0 - 0xE000 E300}; \texttt{IABR1 - 0xE000 E304}. \\
+\hline
+\texttt{IPR0} a \texttt{IPR8} & Registros de prioridad. Permiten asignar una prioridad a cada interrupci\'on; cada registro contiene campos de prioridad de 5 bits para 4 interrupciones. & R/W & 0 & \texttt{IPR0 - 0xE000 E400} a \texttt{IPR8 - 0xE000 E420}. \\
+\hline
+\texttt{STIR} & \textit{Software Trigger Interrupt Register}. Permite que software genere una interrupci\'on. & WO & 0 & \texttt{STIR - 0xE000 EF00}. \\
+\hline
+\end{longtable}
+\normalsize
+
+\subsection{\texttt{ISER0} y \texttt{ISER1}}
+Los registros \texttt{ISER} controlan el estado \texttt{enabled}. Escribir \texttt{1} en un bit habilita la \texttt{IRQ}; escribir \texttt{0} no produce efecto. La lectura devuelve si la interrupci\'on est\'a o no habilitada.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Set-Enable Register 0 register (\texttt{ISER0} - \texttt{0xE000 E100}) (Table 52)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ISE\_WDT} & Habilitaci\'on de interrupci\'on del Watchdog. Escritura: \texttt{0} no cambia nada, \texttt{1} habilita la interrupci\'on. Lectura: \texttt{0} indica deshabilitada, \texttt{1} indica habilitada. \\
+    \hline
+    1 & \texttt{ISE\_TIMER0} & Habilitaci\'on de interrupci\'on de Timer 0. Ver descripci\'on funcional del bit 0. \\
+    \hline
+    2 & \texttt{ISE\_TIMER1} & Habilitaci\'on de interrupci\'on de Timer 1. Ver bit 0. \\
+    \hline
+    3 & \texttt{ISE\_TIMER2} & Habilitaci\'on de interrupci\'on de Timer 2. Ver bit 0. \\
+    \hline
+    4 & \texttt{ISE\_TIMER3} & Habilitaci\'on de interrupci\'on de Timer 3. Ver bit 0. \\
+    \hline
+    5 & \texttt{ISE\_UART0} & Habilitaci\'on de interrupci\'on de UART0. Ver bit 0. \\
+    \hline
+    6 & \texttt{ISE\_UART1} & Habilitaci\'on de interrupci\'on de UART1. Ver bit 0. \\
+    \hline
+    7 & \texttt{ISE\_UART2} & Habilitaci\'on de interrupci\'on de UART2. Ver bit 0. \\
+    \hline
+    8 & \texttt{ISE\_UART3} & Habilitaci\'on de interrupci\'on de UART3. Ver bit 0. \\
+    \hline
+    9 & \texttt{ISE\_PWM} & Habilitaci\'on de interrupci\'on de PWM1. Ver bit 0. \\
+    \hline
+    10 & \texttt{ISE\_I2C0} & Habilitaci\'on de interrupci\'on de I2C0. Ver bit 0. \\
+    \hline
+    11 & \texttt{ISE\_I2C1} & Habilitaci\'on de interrupci\'on de I2C1. Ver bit 0. \\
+    \hline
+    12 & \texttt{ISE\_I2C2} & Habilitaci\'on de interrupci\'on de I2C2. Ver bit 0. \\
+    \hline
+    13 & \texttt{ISE\_SPI} & Habilitaci\'on de interrupci\'on de SPI. Ver bit 0. \\
+    \hline
+    14 & \texttt{ISE\_SSP0} & Habilitaci\'on de interrupci\'on de SSP0. Ver bit 0. \\
+    \hline
+    15 & \texttt{ISE\_SSP1} & Habilitaci\'on de interrupci\'on de SSP1. Ver bit 0. \\
+    \hline
+    16 & \texttt{ISE\_PLL0} & Habilitaci\'on de interrupci\'on de PLL0. Ver bit 0. \\
+    \hline
+    17 & \texttt{ISE\_RTC} & Habilitaci\'on de interrupci\'on de RTC. Ver bit 0. \\
+    \hline
+    18 & \texttt{ISE\_EINT0} & Habilitaci\'on de interrupci\'on externa 0. Ver bit 0. \\
+    \hline
+    19 & \texttt{ISE\_EINT1} & Habilitaci\'on de interrupci\'on externa 1. Ver bit 0. \\
+    \hline
+    20 & \texttt{ISE\_EINT2} & Habilitaci\'on de interrupci\'on externa 2. Ver bit 0. \\
+    \hline
+    21 & \texttt{ISE\_EINT3} & Habilitaci\'on de interrupci\'on externa 3. Ver bit 0. \\
+    \hline
+    22 & \texttt{ISE\_ADC} & Habilitaci\'on de interrupci\'on de ADC. Ver bit 0. \\
+    \hline
+    23 & \texttt{ISE\_BOD} & Habilitaci\'on de interrupci\'on de BOD. Ver bit 0. \\
+    \hline
+    24 & \texttt{ISE\_USB} & Habilitaci\'on de interrupci\'on de USB. Ver bit 0. \\
+    \hline
+    25 & \texttt{ISE\_CAN} & Habilitaci\'on de interrupci\'on de CAN. Ver bit 0. \\
+    \hline
+    26 & \texttt{ISE\_DMA} & Habilitaci\'on de interrupci\'on de GPDMA. Ver bit 0. \\
+    \hline
+    27 & \texttt{ISE\_I2S} & Habilitaci\'on de interrupci\'on de I2S. Ver bit 0. \\
+    \hline
+    28 & \texttt{ISE\_ENET} & Habilitaci\'on de interrupci\'on de Ethernet. Ver bit 0. \\
+    \hline
+    29 & \texttt{ISE\_RIT} & Habilitaci\'on de interrupci\'on de Repetitive Interrupt Timer. Ver bit 0. \\
+    \hline
+    30 & \texttt{ISE\_MCPWM} & Habilitaci\'on de interrupci\'on de Motor Control PWM. Ver bit 0. \\
+    \hline
+    31 & \texttt{ISE\_QEI} & Habilitaci\'on de interrupci\'on de Quadrature Encoder Interface. Ver bit 0. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Set-Enable Register 1 register (\texttt{ISER1} - \texttt{0xE000 E104}) (Table 53)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ISE\_PLL1} & Habilitaci\'on de interrupci\'on de PLL1 (USB PLL). Escritura: \texttt{0} no cambia nada, \texttt{1} habilita. Lectura: \texttt{0} deshabilitada, \texttt{1} habilitada. \\
+    \hline
+    1 & \texttt{ISE\_USBACT} & Habilitaci\'on de USB Activity Interrupt. Ver bit 0. \\
+    \hline
+    2 & \texttt{ISE\_CANACT} & Habilitaci\'on de CAN Activity Interrupt. Ver bit 0. \\
+    \hline
+    31:3 & --- & Reservado. Software de usuario no debe escribir unos en bits reservados. El valor le\'ido no est\'a definido. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{\texttt{ICER0} y \texttt{ICER1}}
+Los registros \texttt{ICER} limpian el estado \texttt{enabled}. Escribir \texttt{1} deshabilita la \texttt{IRQ}; escribir \texttt{0} no produce efecto. La lectura devuelve si la interrupci\'on sigue habilitada o no.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Clear-Enable Register 0 (\texttt{ICER0} - \texttt{0xE000 E180}) (Table 54)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ICE\_WDT} & Deshabilitaci\'on de interrupci\'on del Watchdog. Escritura: \texttt{0} no cambia nada, \texttt{1} deshabilita la interrupci\'on. Lectura: \texttt{0} deshabilitada, \texttt{1} habilitada. \\
+    \hline
+    1 & \texttt{ICE\_TIMER0} & Deshabilitaci\'on de Timer 0. Ver bit 0. \\
+    \hline
+    2 & \texttt{ICE\_TIMER1} & Deshabilitaci\'on de Timer 1. Ver bit 0. \\
+    \hline
+    3 & \texttt{ICE\_TIMER2} & Deshabilitaci\'on de Timer 2. Ver bit 0. \\
+    \hline
+    4 & \texttt{ICE\_TIMER3} & Deshabilitaci\'on de Timer 3. Ver bit 0. \\
+    \hline
+    5 & \texttt{ICE\_UART0} & Deshabilitaci\'on de UART0. Ver bit 0. \\
+    \hline
+    6 & \texttt{ICE\_UART1} & Deshabilitaci\'on de UART1. Ver bit 0. \\
+    \hline
+    7 & \texttt{ICE\_UART2} & Deshabilitaci\'on de UART2. Ver bit 0. \\
+    \hline
+    8 & \texttt{ICE\_UART3} & Deshabilitaci\'on de UART3. Ver bit 0. \\
+    \hline
+    9 & \texttt{ICE\_PWM} & Deshabilitaci\'on de PWM1. Ver bit 0. \\
+    \hline
+    10 & \texttt{ICE\_I2C0} & Deshabilitaci\'on de I2C0. Ver bit 0. \\
+    \hline
+    11 & \texttt{ICE\_I2C1} & Deshabilitaci\'on de I2C1. Ver bit 0. \\
+    \hline
+    12 & \texttt{ICE\_I2C2} & Deshabilitaci\'on de I2C2. Ver bit 0. \\
+    \hline
+    13 & \texttt{ICE\_SPI} & Deshabilitaci\'on de SPI. Ver bit 0. \\
+    \hline
+    14 & \texttt{ICE\_SSP0} & Deshabilitaci\'on de SSP0. Ver bit 0. \\
+    \hline
+    15 & \texttt{ICE\_SSP1} & Deshabilitaci\'on de SSP1. Ver bit 0. \\
+    \hline
+    16 & \texttt{ICE\_PLL0} & Deshabilitaci\'on de PLL0. Ver bit 0. \\
+    \hline
+    17 & \texttt{ICE\_RTC} & Deshabilitaci\'on de RTC. Ver bit 0. \\
+    \hline
+    18 & \texttt{ICE\_EINT0} & Deshabilitaci\'on de EINT0. Ver bit 0. \\
+    \hline
+    19 & \texttt{ICE\_EINT1} & Deshabilitaci\'on de EINT1. Ver bit 0. \\
+    \hline
+    20 & \texttt{ICE\_EINT2} & Deshabilitaci\'on de EINT2. Ver bit 0. \\
+    \hline
+    21 & \texttt{ICE\_EINT3} & Deshabilitaci\'on de EINT3. Ver bit 0. \\
+    \hline
+    22 & \texttt{ICE\_ADC} & Deshabilitaci\'on de ADC. Ver bit 0. \\
+    \hline
+    23 & \texttt{ICE\_BOD} & Deshabilitaci\'on de BOD. Ver bit 0. \\
+    \hline
+    24 & \texttt{ICE\_USB} & Deshabilitaci\'on de USB. Ver bit 0. \\
+    \hline
+    25 & \texttt{ICE\_CAN} & Deshabilitaci\'on de CAN. Ver bit 0. \\
+    \hline
+    26 & \texttt{ICE\_DMA} & Deshabilitaci\'on de GPDMA. Ver bit 0. \\
+    \hline
+    27 & \texttt{ICE\_I2S} & Deshabilitaci\'on de I2S. Ver bit 0. \\
+    \hline
+    28 & \texttt{ICE\_ENET} & Deshabilitaci\'on de Ethernet. Ver bit 0. \\
+    \hline
+    29 & \texttt{ICE\_RIT} & Deshabilitaci\'on de Repetitive Interrupt Timer. Ver bit 0. \\
+    \hline
+    30 & \texttt{ICE\_MCPWM} & Deshabilitaci\'on de Motor Control PWM. Ver bit 0. \\
+    \hline
+    31 & \texttt{ICE\_QEI} & Deshabilitaci\'on de Quadrature Encoder Interface. Ver bit 0. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Clear-Enable Register 1 register (\texttt{ICER1} - \texttt{0xE000 E184}) (Table 55)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ICE\_PLL1} & Deshabilitaci\'on de PLL1 (USB PLL). Escritura: \texttt{0} no cambia nada, \texttt{1} deshabilita. Lectura: \texttt{0} deshabilitada, \texttt{1} habilitada. \\
+    \hline
+    1 & \texttt{ICE\_USBACT} & Deshabilitaci\'on de USB Activity Interrupt. Ver bit 0. \\
+    \hline
+    2 & \texttt{ICE\_CANACT} & Deshabilitaci\'on de CAN Activity Interrupt. Ver bit 0. \\
+    \hline
+    31:3 & --- & Reservado. Software de usuario no debe escribir unos en bits reservados. El valor le\'ido no est\'a definido. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{\texttt{ISPR0} y \texttt{ISPR1}}
+Los registros \texttt{ISPR} fuerzan el estado \texttt{pending}. Resultan \'utiles para test, depuraci\'on o para generar eventos controlados por software sin depender del perif\'erico real.
+
+\paragraph{Nota t\'ecnica}
+Cambiar \texttt{pending} por software puede tener sentido para validar que una \texttt{ISR} est\'a bien vectorizada, para comprobar prioridades o para inyectar un evento de software que se procese por el mismo camino del \texttt{NVIC}. No equivale a llamar una funci\'on: al usar \texttt{ISPR}, la atenci\'on sigue pasando por prioridad, arbitraje y tabla vectorial.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Set-Pending Register 0 register (\texttt{ISPR0} - \texttt{0xE000 E200}) (Table 56)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ISP\_WDT} & Poner \texttt{pending} la interrupci\'on de Watchdog. Escritura: \texttt{0} no cambia nada, \texttt{1} cambia el estado a \texttt{pending}. Lectura: \texttt{0} no pendiente, \texttt{1} pendiente. \\
+    \hline
+    1 & \texttt{ISP\_TIMER0} & Poner \texttt{pending} Timer 0. Ver bit 0. \\
+    \hline
+    2 & \texttt{ISP\_TIMER1} & Poner \texttt{pending} Timer 1. Ver bit 0. \\
+    \hline
+    3 & \texttt{ISP\_TIMER2} & Poner \texttt{pending} Timer 2. Ver bit 0. \\
+    \hline
+    4 & \texttt{ISP\_TIMER3} & Poner \texttt{pending} Timer 3. Ver bit 0. \\
+    \hline
+    5 & \texttt{ISP\_UART0} & Poner \texttt{pending} UART0. Ver bit 0. \\
+    \hline
+    6 & \texttt{ISP\_UART1} & Poner \texttt{pending} UART1. Ver bit 0. \\
+    \hline
+    7 & \texttt{ISP\_UART2} & Poner \texttt{pending} UART2. Ver bit 0. \\
+    \hline
+    8 & \texttt{ISP\_UART3} & Poner \texttt{pending} UART3. Ver bit 0. \\
+    \hline
+    9 & \texttt{ISP\_PWM} & Poner \texttt{pending} PWM1. Ver bit 0. \\
+    \hline
+    10 & \texttt{ISP\_I2C0} & Poner \texttt{pending} I2C0. Ver bit 0. \\
+    \hline
+    11 & \texttt{ISP\_I2C1} & Poner \texttt{pending} I2C1. Ver bit 0. \\
+    \hline
+    12 & \texttt{ISP\_I2C2} & Poner \texttt{pending} I2C2. Ver bit 0. \\
+    \hline
+    13 & \texttt{ISP\_SPI} & Poner \texttt{pending} SPI. Ver bit 0. \\
+    \hline
+    14 & \texttt{ISP\_SSP0} & Poner \texttt{pending} SSP0. Ver bit 0. \\
+    \hline
+    15 & \texttt{ISP\_SSP1} & Poner \texttt{pending} SSP1. Ver bit 0. \\
+    \hline
+    16 & \texttt{ISP\_PLL0} & Poner \texttt{pending} PLL0. Ver bit 0. \\
+    \hline
+    17 & \texttt{ISP\_RTC} & Poner \texttt{pending} RTC. Ver bit 0. \\
+    \hline
+    18 & \texttt{ISP\_EINT0} & Poner \texttt{pending} EINT0. Ver bit 0. \\
+    \hline
+    19 & \texttt{ISP\_EINT1} & Poner \texttt{pending} EINT1. Ver bit 0. \\
+    \hline
+    20 & \texttt{ISP\_EINT2} & Poner \texttt{pending} EINT2. Ver bit 0. \\
+    \hline
+    21 & \texttt{ISP\_EINT3} & Poner \texttt{pending} EINT3. Ver bit 0. \\
+    \hline
+    22 & \texttt{ISP\_ADC} & Poner \texttt{pending} ADC. Ver bit 0. \\
+    \hline
+    23 & \texttt{ISP\_BOD} & Poner \texttt{pending} BOD. Ver bit 0. \\
+    \hline
+    24 & \texttt{ISP\_USB} & Poner \texttt{pending} USB. Ver bit 0. \\
+    \hline
+    25 & \texttt{ISP\_CAN} & Poner \texttt{pending} CAN. Ver bit 0. \\
+    \hline
+    26 & \texttt{ISP\_DMA} & Poner \texttt{pending} GPDMA. Ver bit 0. \\
+    \hline
+    27 & \texttt{ISP\_I2S} & Poner \texttt{pending} I2S. Ver bit 0. \\
+    \hline
+    28 & \texttt{ISP\_ENET} & Poner \texttt{pending} Ethernet. Ver bit 0. \\
+    \hline
+    29 & \texttt{ISP\_RIT} & Poner \texttt{pending} Repetitive Interrupt Timer. Ver bit 0. \\
+    \hline
+    30 & \texttt{ISP\_MCPWM} & Poner \texttt{pending} Motor Control PWM. Ver bit 0. \\
+    \hline
+    31 & \texttt{ISP\_QEI} & Poner \texttt{pending} Quadrature Encoder Interface. Ver bit 0. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Set-Pending Register 1 register (\texttt{ISPR1} - \texttt{0xE000 E204}) (Table 57)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ISP\_PLL1} & Poner \texttt{pending} PLL1 (USB PLL). Escritura: \texttt{0} no cambia nada, \texttt{1} cambia a \texttt{pending}. Lectura: \texttt{0} no pendiente, \texttt{1} pendiente. \\
+    \hline
+    1 & \texttt{ISP\_USBACT} & Poner \texttt{pending} USB Activity Interrupt. Ver bit 0. \\
+    \hline
+    2 & \texttt{ISP\_CANACT} & Poner \texttt{pending} CAN Activity Interrupt. Ver bit 0. \\
+    \hline
+    31:3 & --- & Reservado. Software de usuario no debe escribir unos en bits reservados. El valor le\'ido no est\'a definido. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{\texttt{ICPR0} y \texttt{ICPR1}}
+Los registros \texttt{ICPR} limpian el estado \texttt{pending}. Sirven para sacar una \texttt{IRQ} de la cola del \texttt{NVIC}, pero no reemplazan la limpieza de la \textbf{causa real} dentro del perif\'erico.
+
+\paragraph{Nota t\'ecnica}
+En una \texttt{ISR} real, lo habitual es limpiar el flag o evento dentro del perif\'erico. Si la causa sigue activa, la interrupci\'on puede volver a quedar \texttt{pending} aunque se la haya limpiado en \texttt{ICPR}.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Clear-Pending Register 0 register (\texttt{ICPR0} - \texttt{0xE000 E280}) (Table 58)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ICP\_WDT} & Limpiar \texttt{pending} de Watchdog. Escritura: \texttt{0} no cambia nada, \texttt{1} cambia a ``not pending''. Lectura: \texttt{0} no pendiente, \texttt{1} pendiente. \\
+    \hline
+    1 & \texttt{ICP\_TIMER0} & Limpiar \texttt{pending} de Timer 0. Ver bit 0. \\
+    \hline
+    2 & \texttt{ICP\_TIMER1} & Limpiar \texttt{pending} de Timer 1. Ver bit 0. \\
+    \hline
+    3 & \texttt{ICP\_TIMER2} & Limpiar \texttt{pending} de Timer 2. Ver bit 0. \\
+    \hline
+    4 & \texttt{ICP\_TIMER3} & Limpiar \texttt{pending} de Timer 3. Ver bit 0. \\
+    \hline
+    5 & \texttt{ICP\_UART0} & Limpiar \texttt{pending} de UART0. Ver bit 0. \\
+    \hline
+    6 & \texttt{ICP\_UART1} & Limpiar \texttt{pending} de UART1. Ver bit 0. \\
+    \hline
+    7 & \texttt{ICP\_UART2} & Limpiar \texttt{pending} de UART2. Ver bit 0. \\
+    \hline
+    8 & \texttt{ICP\_UART3} & Limpiar \texttt{pending} de UART3. Ver bit 0. \\
+    \hline
+    9 & \texttt{ICP\_PWM} & Limpiar \texttt{pending} de PWM1. Ver bit 0. \\
+    \hline
+    10 & \texttt{ICP\_I2C0} & Limpiar \texttt{pending} de I2C0. Ver bit 0. \\
+    \hline
+    11 & \texttt{ICP\_I2C1} & Limpiar \texttt{pending} de I2C1. Ver bit 0. \\
+    \hline
+    12 & \texttt{ICP\_I2C2} & Limpiar \texttt{pending} de I2C2. Ver bit 0. \\
+    \hline
+    13 & \texttt{ICP\_SPI} & Limpiar \texttt{pending} de SPI. Ver bit 0. \\
+    \hline
+    14 & \texttt{ICP\_SSP0} & Limpiar \texttt{pending} de SSP0. Ver bit 0. \\
+    \hline
+    15 & \texttt{ICP\_SSP1} & Limpiar \texttt{pending} de SSP1. Ver bit 0. \\
+    \hline
+    16 & \texttt{ICP\_PLL0} & Limpiar \texttt{pending} de PLL0. Ver bit 0. \\
+    \hline
+    17 & \texttt{ICP\_RTC} & Limpiar \texttt{pending} de RTC. Ver bit 0. \\
+    \hline
+    18 & \texttt{ICP\_EINT0} & Limpiar \texttt{pending} de EINT0. Ver bit 0. \\
+    \hline
+    19 & \texttt{ICP\_EINT1} & Limpiar \texttt{pending} de EINT1. Ver bit 0. \\
+    \hline
+    20 & \texttt{ICP\_EINT2} & Limpiar \texttt{pending} de EINT2. Ver bit 0. \\
+    \hline
+    21 & \texttt{ICP\_EINT3} & Limpiar \texttt{pending} de EINT3. Ver bit 0. \\
+    \hline
+    22 & \texttt{ICP\_ADC} & Limpiar \texttt{pending} de ADC. Ver bit 0. \\
+    \hline
+    23 & \texttt{ICP\_BOD} & Limpiar \texttt{pending} de BOD. Ver bit 0. \\
+    \hline
+    24 & \texttt{ICP\_USB} & Limpiar \texttt{pending} de USB. Ver bit 0. \\
+    \hline
+    25 & \texttt{ICP\_CAN} & Limpiar \texttt{pending} de CAN. Ver bit 0. \\
+    \hline
+    26 & \texttt{ICP\_DMA} & Limpiar \texttt{pending} de GPDMA. Ver bit 0. \\
+    \hline
+    27 & \texttt{ICP\_I2S} & Limpiar \texttt{pending} de I2S. Ver bit 0. \\
+    \hline
+    28 & \texttt{ICP\_ENET} & Limpiar \texttt{pending} de Ethernet. Ver bit 0. \\
+    \hline
+    29 & \texttt{ICP\_RIT} & Limpiar \texttt{pending} de Repetitive Interrupt Timer. Ver bit 0. \\
+    \hline
+    30 & \texttt{ICP\_MCPWM} & Limpiar \texttt{pending} de Motor Control PWM. Ver bit 0. \\
+    \hline
+    31 & \texttt{ICP\_QEI} & Limpiar \texttt{pending} de Quadrature Encoder Interface. Ver bit 0. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Set-Pending Register 1 register (\texttt{ISPR1} - \texttt{0xE000 E204}) (Table 59)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{ICP\_PLL1} & Limpiar \texttt{pending} de PLL1 (USB PLL). Escritura: \texttt{0} no cambia nada, \texttt{1} cambia a ``not pending''. Lectura: \texttt{0} no pendiente, \texttt{1} pendiente. \\
+    \hline
+    1 & \texttt{ICP\_USBACT} & Limpiar \texttt{pending} de USB Activity Interrupt. Ver bit 0. \\
+    \hline
+    2 & \texttt{ICP\_CANACT} & Limpiar \texttt{pending} de CAN Activity Interrupt. Ver bit 0. \\
+    \hline
+    31:3 & --- & Reservado. Software de usuario no debe escribir unos en bits reservados. El valor le\'ido no est\'a definido. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\paragraph{Nota t\'ecnica}
+La \texttt{Table 59} del datasheet conserva la leyenda de \texttt{ISPR1}, pero el contenido funcional corresponde a \texttt{ICPR1}. En este resumen se preserva la caption original por trazabilidad, pero la interpretaci\'on correcta es la de \textbf{clear-pending}.
+
+\subsection{\texttt{IABR0} y \texttt{IABR1}}
+Los registros \texttt{IABR} permiten leer el estado \texttt{active}. Ese estado no se programa manualmente en el flujo normal: lo maneja el Cortex-M3 cuando la \texttt{IRQ} fue aceptada y su \texttt{ISR} est\'a en ejecuci\'on o forma parte de un contexto anidado.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Active Bit Register 0 (\texttt{IABR0} - \texttt{0xE000 E300}) (Table 60)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{IAB\_WDT} & Estado activo de la interrupci\'on de Watchdog. Lectura: \texttt{0} no activa, \texttt{1} activa. \\
+    \hline
+    1 & \texttt{IAB\_TIMER0} & Estado activo de Timer 0. Ver bit 0. \\
+    \hline
+    2 & \texttt{IAB\_TIMER1} & Estado activo de Timer 1. Ver bit 0. \\
+    \hline
+    3 & \texttt{IAB\_TIMER2} & Estado activo de Timer 2. Ver bit 0. \\
+    \hline
+    4 & \texttt{IAB\_TIMER3} & Estado activo de Timer 3. Ver bit 0. \\
+    \hline
+    5 & \texttt{IAB\_UART0} & Estado activo de UART0. Ver bit 0. \\
+    \hline
+    6 & \texttt{IAB\_UART1} & Estado activo de UART1. Ver bit 0. \\
+    \hline
+    7 & \texttt{IAB\_UART2} & Estado activo de UART2. Ver bit 0. \\
+    \hline
+    8 & \texttt{IAB\_UART3} & Estado activo de UART3. Ver bit 0. \\
+    \hline
+    9 & \texttt{IAB\_PWM} & Estado activo de PWM1. Ver bit 0. \\
+    \hline
+    10 & \texttt{IAB\_I2C0} & Estado activo de I2C0. Ver bit 0. \\
+    \hline
+    11 & \texttt{IAB\_I2C1} & Estado activo de I2C1. Ver bit 0. \\
+    \hline
+    12 & \texttt{IAB\_I2C2} & Estado activo de I2C2. Ver bit 0. \\
+    \hline
+    13 & \texttt{IAB\_SPI} & Estado activo de SPI. Ver bit 0. \\
+    \hline
+    14 & \texttt{IAB\_SSP0} & Estado activo de SSP0. Ver bit 0. \\
+    \hline
+    15 & \texttt{IAB\_SSP1} & Estado activo de SSP1. Ver bit 0. \\
+    \hline
+    16 & \texttt{IAB\_PLL0} & Estado activo de PLL0. Ver bit 0. \\
+    \hline
+    17 & \texttt{IAB\_RTC} & Estado activo de RTC. Ver bit 0. \\
+    \hline
+    18 & \texttt{IAB\_EINT0} & Estado activo de EINT0. Ver bit 0. \\
+    \hline
+    19 & \texttt{IAB\_EINT1} & Estado activo de EINT1. Ver bit 0. \\
+    \hline
+    20 & \texttt{IAB\_EINT2} & Estado activo de EINT2. Ver bit 0. \\
+    \hline
+    21 & \texttt{IAB\_EINT3} & Estado activo de EINT3. Ver bit 0. \\
+    \hline
+    22 & \texttt{IAB\_ADC} & Estado activo de ADC. Ver bit 0. \\
+    \hline
+    23 & \texttt{IAB\_BOD} & Estado activo de BOD. Ver bit 0. \\
+    \hline
+    24 & \texttt{IAB\_USB} & Estado activo de USB. Ver bit 0. \\
+    \hline
+    25 & \texttt{IAB\_CAN} & Estado activo de CAN. Ver bit 0. \\
+    \hline
+    26 & \texttt{IAB\_DMA} & Estado activo de GPDMA. Ver bit 0. \\
+    \hline
+    27 & \texttt{IAB\_I2S} & Estado activo de I2S. Ver bit 0. \\
+    \hline
+    28 & \texttt{IAB\_ENET} & Estado activo de Ethernet. Ver bit 0. \\
+    \hline
+    29 & \texttt{IAB\_RIT} & Estado activo de Repetitive Interrupt Timer. Ver bit 0. \\
+    \hline
+    30 & \texttt{IAB\_MCPWM} & Estado activo de Motor Control PWM. Ver bit 0. \\
+    \hline
+    31 & \texttt{IAB\_QEI} & Estado activo de Quadrature Encoder Interface. Ver bit 0. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Active Bit Register 1 (\texttt{IABR1} - \texttt{0xE000 E304}) (Table 61)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    0 & \texttt{IAB\_PLL1} & Estado activo de PLL1 (USB PLL). Lectura: \texttt{0} no activa, \texttt{1} activa. \\
+    \hline
+    1 & \texttt{IAB\_USBACT} & Estado activo de USB Activity Interrupt. Ver bit 0. \\
+    \hline
+    2 & \texttt{IAB\_CANACT} & Estado activo de CAN Activity Interrupt. Ver bit 0. \\
+    \hline
+    31:3 & --- & Reservado. El valor le\'ido no est\'a definido. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{\texttt{IPR0} a \texttt{IPR8}}
+Los registros \texttt{IPR} controlan prioridades. Cada \texttt{IRQ} dispone de un campo \textbf{\'util de 5 bits}; el valor \texttt{0} es la \textbf{mayor prioridad} y \texttt{31} (\texttt{0x1F}) es la \textbf{menor}. Los bits no implementados leen \texttt{0} e ignoran escrituras.
+
+\paragraph{Nota t\'ecnica}
+Una \texttt{IRQ} de mayor prioridad puede preemptar a otra menos prioritaria. Si una \texttt{ISR} es preemptada, la primera no vuelve a \texttt{pending}: queda suspendida y luego se retoma. El arbitraje del \texttt{NVIC} mira prioridad antes que orden de llegada.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 0 (\texttt{IPR0} - \texttt{0xE000 E400}) (Table 62)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Estos bits ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_WDT} & Prioridad de Watchdog. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Estos bits ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_TIMER0} & Prioridad de Timer 0. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Estos bits ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_TIMER1} & Prioridad de Timer 1. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Estos bits ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_TIMER2} & Prioridad de Timer 2. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 1 (\texttt{IPR1} - \texttt{0xE000 E404}) (Table 63)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_TIMER3} & Prioridad de Timer 3. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_UART0} & Prioridad de UART0. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_UART1} & Prioridad de UART1. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_UART2} & Prioridad de UART2. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 2 (\texttt{IPR2} - \texttt{0xE000 E408}) (Table 64)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_UART3} & Prioridad de UART3. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_PWM} & Prioridad de PWM. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_I2C0} & Prioridad de I2C0. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_I2C1} & Prioridad de I2C1. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 3 (\texttt{IPR3} - \texttt{0xE000 E40C}) (Table 65)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_I2C2} & Prioridad de I2C2. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_SPI} & Prioridad de SPI. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_SSP0} & Prioridad de SSP0. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_SSP1} & Prioridad de SSP1. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 4 (\texttt{IPR4} - \texttt{0xE000 E410}) (Table 66)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_PLL0} & Prioridad de PLL0. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_RTC} & Prioridad de RTC. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_EINT0} & Prioridad de EINT0. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_EINT1} & Prioridad de EINT1. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 5 (\texttt{IPR5} - \texttt{0xE000 E414}) (Table 67)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_EINT2} & Prioridad de EINT2. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_EINT3} & Prioridad de EINT3. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_ADC} & Prioridad de ADC. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_BOD} & Prioridad de BOD. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 6 (\texttt{IPR6} - \texttt{0xE000 E418}) (Table 68)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_USB} & Prioridad de USB. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_CAN} & Prioridad de CAN. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_DMA} & Prioridad de GPDMA. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_I2S} & Prioridad de I2S. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 7 (\texttt{IPR7} - \texttt{0xE000 E41C}) (Table 69)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_ENET} & Prioridad de Ethernet. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_RIT} & Prioridad de Repetitive Interrupt Timer. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_MCPWM} & Prioridad de Motor Control PWM. Ver bits 7:3. \\
+    \hline
+    26:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    31:27 & \texttt{IP\_QEI} & Prioridad de Quadrature Encoder Interface. Ver bits 7:3. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Interrupt Priority Register 8 (\texttt{IPR8} - \texttt{0xE000 E420}) (Table 70)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    2:0 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    7:3 & \texttt{IP\_PLL1} & Prioridad de PLL1. \texttt{0} = mayor prioridad; \texttt{31} = menor prioridad. \\
+    \hline
+    10:8 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    15:11 & \texttt{IP\_USBACT} & Prioridad de USB Activity Interrupt. Ver bits 7:3. \\
+    \hline
+    18:16 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+    23:19 & \texttt{IP\_CANACT} & Prioridad de CAN Activity Interrupt. Ver bits 7:3. \\
+    \hline
+    31:24 & \texttt{Unimplemented} & Ignoran escrituras y leen \texttt{0}. \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{\texttt{STIR}}
+El registro \texttt{STIR} ofrece una v\'ia alternativa a \texttt{ISPR} para generar una interrupci\'on por software. Solo aplica a \textbf{interrupciones perif\'ericas}; no sirve para excepciones del sistema.
+
+\paragraph{Uso pr\'actico}
+\texttt{STIR} es \'util para \textbf{test}, \textbf{depuraci\'on} y verificaci\'on de prioridades o vectorizaci\'on. No reemplaza una llamada directa a funci\'on: al escribir en \texttt{STIR}, la atenci\'on sigue pasando por el \texttt{NVIC}, respeta prioridades y usa la tabla vectorial real.
+
+\paragraph{Nota t\'ecnica}
+Por defecto, solo software \textbf{privilegiado} puede escribir \texttt{STIR}. Software no privilegiado solo puede hacerlo si software privilegiado habilita \texttt{USERSETMPEND} en el registro \texttt{CCR}.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \caption{Software Trigger Interrupt Register (\texttt{STIR} - \texttt{0xE000 EF00}) (Table 71)}
+  \begin{tabularx}{0.96\textwidth}{|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{Bit} & \textbf{Name} & \textbf{Function} \\
+    \hline
+    8:0 & \texttt{INTID} & Escribir un valor en este campo genera una interrupci\'on para el n\'umero de interrupci\'on especificado (ver \texttt{Table 50}). El rango permitido para LPC17xx es \texttt{0} a \texttt{111}. \\
+    \hline
+    31:9 & --- & Reservado. Software de usuario no debe escribir unos en bits reservados. El valor le\'ido no est\'a definido. \\
+    \hline
+  \end{tabularx}
+\end{table}
