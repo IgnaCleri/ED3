@@ -283,3 +283,54 @@ tectonic --keep-logs --keep-intermediates --outdir docs/latex docs/latex/main.te
 - `Chapter 6` se resolvio sin figuras nuevas porque el contenido quedo suficientemente cubierto con tablas y notas tecnicas.
 - Se mantuvo la estructura general del manual original para que el lector pueda cruzar facil el apunte con el datasheet.
 - `tectonic` quedo registrado como compilador efectivo usado en esta integracion, sin invalidar otros flujos historicos del documento.
+
+## Proceso documentado para el capitulo 23
+
+Se deja registrado el flujo real usado para integrar `Chapter 23: LPC17xx System Tick Timer` al apunte.
+
+### Objetivo editorial
+
+- Mantener formato de consulta rapida.
+- Preservar la numeracion real del datasheet en el bloque `23.1` a `23.6`.
+- Incluir el mapa de registros y las tablas `438` a `442`.
+- Resumir los cuatro ejemplos de c\'alculo de temporizaci\'on sin perder los valores concretos del manual.
+- Incorporar la `Fig 118` del datasheet con un recorte dedicado para el diagrama de bloques del `SysTick`.
+
+### Implementacion usada
+
+1. Se relevo el `Chapter 23` en `docs/referencia/lpc17xx_um_unlocked.txt`, usando el PDF como apoyo cuando hac\'ia falta verificar la estructura del capitulo.
+2. Por pedido del usuario se salte\'o la fase de explicaci\'on previa en chat y se pas\'o directo a la redacci\'on del resumen.
+3. Se cre\'o `docs/latex/chapter23.tex` como archivo separado.
+4. Se integr\'o el capitulo en `docs/latex/main.tex` sin alterar el orden interno de los cap\'itulos ya existentes; se preserv\'o el salto de numeraci\'on para seguir el datasheet.
+5. Se mantuvo el criterio editorial del apunte:
+   - narrativa breve,
+   - tablas y mapa de registros como base principal,
+   - notas t\'ecnicas s\'olo donde ayudan a interpretar `COUNTFLAG`, `STCURR` y `STCALIB`.
+6. Se extrajo un recorte dedicado de la `Fig 118` desde la p\'agina del datasheet donde aparece el diagrama de bloques del `System Tick Timer` y se guard\'o en `docs/latex/images/`.
+
+### QA aplicada
+
+1. Se compil\'o `docs/latex/main.tex` con `tectonic`.
+2. Resultado: compilaci\'on exitosa y generaci\'on de `docs/latex/main.pdf`.
+3. El \'indice del PDF incluy\'o el nuevo Chapter 23 en la posici\'on correcta.
+4. El cap\'itulo qued\'o ubicado entre las p\'aginas `64` y `68` del PDF generado.
+5. Se renderizaron p\'aginas representativas a `artifacts/qa/chapter23/`.
+6. Se revisaron visualmente estas p\'aginas del bloque:
+   - apertura del cap\'itulo,
+   - p\'agina con la figura del diagrama de bloques,
+   - mapa de registros,
+   - tablas de bits,
+   - bloque de ejemplos.
+7. Resultado de la revisi\'on:
+   - tablas legibles en las p\'aginas inspeccionadas,
+   - figura `Fig 118` integrada con recorte dedicado y legible en el PDF final,
+   - sin errores visuales graves,
+   - warnings de maquetado presentes en la compilaci\'on global, pero sin impacto claro en el Chapter 23 revisado.
+
+### Archivos tocados por este capitulo
+
+- `docs/latex/main.tex`
+- `docs/latex/chapter23.tex`
+- `docs/latex/images/lpc17xx_systick_block_diagram_fig118.png`
+- `docs/latex/main.pdf`
+- `artifacts/qa/chapter23/`
