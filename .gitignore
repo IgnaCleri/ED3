@@ -1,5 +1,6 @@
 .vscode/
 tmp/
+.mcuxpressoide_packages_support/
 
 docs/latex/**
 !docs/latex/README.md
