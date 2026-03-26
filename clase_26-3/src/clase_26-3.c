@@ -5,8 +5,6 @@
 
 void  conf_pcb(void);
 
-uint8_t frecuencia = 50;
-
 int main()
 {
 
@@ -21,23 +19,6 @@ int main()
 
 }
 
-void EINT0_IRQHandler()
-{
-
-	if(frecuencia == 50)
-	{
-
-		frecuencia = 100;
-
-	}
-	else
-	{
-
-		frecuencia = 50;
-
-	}
-
-}
 
 
 void SysTick_Handler ()
@@ -47,7 +28,7 @@ void SysTick_Handler ()
 	static uint8_t estado = 0;
 	ticks++;
 
-	if(ticks == frecuencia)
+	if(ticks == 50)
 	{
 
 		ticks = 0;
@@ -89,19 +70,6 @@ void SysTick_Handler ()
 void conf_pcb(void)
 {
 
-	// INT EXTERNA
-	LPC_SC->EXTMODE  |= 0b01;               // la INT externa ya que puede generar interrupciones
-	LPC_SC->EXTPOLAR &= ~(0b01);            // Ponemos que interrumpa en flanco descendente
-
-	LPC_PINCON->PINSEL4 &= ~(0b10 << 20);   // Limpiamos el bit 21
-	LPC_PINCON->PINSEL4 |=  (0b01 << 20);   // Ponemos bit 20 en 1, EINT0
-	LPC_PINCON->PINMODE4 &= ~(0b00 << 20);  // Ponemos Pullup en el pin P2.10
-
-	NVIC->ISER[0] |=   0b01 << 18;
-	NVIC->IP[4]   &= ~(0b11111 << 19);      // Aseguramos un 0 en los bits para que quede el 5
-	NVIC->IP[4]   |= 0b00101 << 19;         // Ponemos un 5 (101) en el apartado de prioridad del INTEXT0
-		                                     // Prioridad 101 (5) a la int externa
-
 	// LED ROJO
 	LPC_PINCON->PINSEL1  &= ~(0b11 << 12);  // Pongo en GPIO (Borro con 11 ya que al negarlo se va a 0)
 	LPC_PINCON->PINMODE1 &= ~(0b01 << 12);   // No pongo ni pullup ni pulldown
@@ -131,7 +99,5 @@ void conf_pcb(void)
 	SysTick->VAL  = 0;                      //
 	SysTick->CTRL |= 0b111;                 // Pongo ENABLE 1, TICKINIT 1,  CLOCKSRC 1, clock de CPU, habilitado
 	                                        // Y contando
-
-
 }
 
