@@ -20,7 +20,6 @@ int main()
 }
 
 
-
 void SysTick_Handler ()
 {
 
@@ -99,5 +98,7 @@ void conf_pcb(void)
 	SysTick->VAL  = 0;                      //
 	SysTick->CTRL |= 0b111;                 // Pongo ENABLE 1, TICKINIT 1,  CLOCKSRC 1, clock de CPU, habilitado
 	                                        // Y contando
+
+
 }
 
