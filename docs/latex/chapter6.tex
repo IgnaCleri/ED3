@@ -965,3 +965,80 @@ Por defecto, solo software \textbf{privilegiado} puede escribir \texttt{STIR}. S
     \hline
   \end{tabularx}
 \end{table}
+
+\subsection{Referencia pr\'actica CMSIS}
+Como cierre del cap\'itulo, esta secci\'on resume el mapeo entre registros de hardware y punteros CMSIS del LPC1769, junto con las funciones de driver m\'as usadas para \texttt{NVIC} y \texttt{SysTick}. La idea es dejar una referencia r\'apida para pasar del manual del perif\'erico al c\'odigo.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.14}
+  \caption{Mapeo de registros de hardware a estructuras CMSIS para el LPC1769}
+  \begin{tabularx}{0.95\textwidth}{|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{M\'odulo} & \textbf{Puntero CMSIS} & \textbf{Registro HW} & \textbf{Miembro de estructura (CMSIS)} \\
+    \hline
+    \multirow{2}{=}{\textbf{GPIO Port 0}} & \multirow{2}{=}{\texttt{LPC\_GPIO0}} & \texttt{FIODIR}, \texttt{FIOPIN} & \texttt{->FIODIR}, \texttt{->FIOPIN} \\
+    \cline{3-4}
+     &  & \texttt{FIOSET}, \texttt{FIOCLR} & \texttt{->FIOSET}, \texttt{->FIOCLR} \\
+    \hline
+    \textbf{GPIO Port 1--4} & \texttt{LPC\_GPIO1..4} & Mismos que \texttt{P0} & \texttt{->FIODIR}, \texttt{->FIOPIN}, etc. \\
+    \hline
+    \multirow{3}{=}{\textbf{Pin Connect}} & \multirow{3}{=}{\texttt{LPC\_PINCON}} & \texttt{PINSEL0...9} & \texttt{->PINSEL0} ... \texttt{->PINSEL9} \\
+    \cline{3-4}
+     &  & \texttt{PINMODE0...9} & \texttt{->PINMODE0} ... \texttt{->PINMODE9} \\
+    \cline{3-4}
+     &  & \texttt{PINMODE\_OD0...4} & \texttt{->PINMODE\_OD0} ... \texttt{->PINMODE\_OD4} \\
+    \hline
+    \multirow{3}{=}{\textbf{SysTick}} & \multirow{3}{=}{\texttt{SysTick}} & \texttt{STCTRL} & \texttt{->CTRL} \\
+    \cline{3-4}
+     &  & \texttt{STRELOAD} & \texttt{->LOAD} \\
+    \cline{3-4}
+     &  & \texttt{STCURR} & \texttt{->VAL} \\
+    \hline
+    \multirow{3}{=}{\textbf{NVIC}} & \multirow{3}{=}{\texttt{NVIC}} & \texttt{ISER0} / \texttt{ISER1} & \texttt{->ISER[0]} / \texttt{->ISER[1]} \\
+    \cline{3-4}
+     &  & \texttt{ICER0} / \texttt{ICER1} & \texttt{->ICER[0]} / \texttt{->ICER[1]} \\
+    \cline{3-4}
+     &  & \texttt{IPR0...IPR8} & \texttt{->IP[n]} \\
+    \hline
+    \multirow{3}{=}{\textbf{Ext. Interrupts}} & \multirow{3}{=}{\texttt{LPC\_SC}} & \texttt{EXTINT} & \texttt{->EXTINT} \\
+    \cline{3-4}
+     &  & \texttt{EXTMODE} & \texttt{->EXTMODE} \\
+    \cline{3-4}
+     &  & \texttt{EXTPOLAR} & \texttt{->EXTPOLAR} \\
+    \hline
+    \multirow{3}{=}{\textbf{GPIO Interrupts}} & \multirow{3}{=}{\texttt{LPC\_GPIOINT}} & \texttt{IO0IntEnR} / \texttt{IO0IntEnF} & \texttt{->IO0IntEnR} / \texttt{->IO0IntEnF} \\
+    \cline{3-4}
+     &  & \texttt{IO2IntEnR} / \texttt{IO2IntEnF} & \texttt{->IO2IntEnR} / \texttt{->IO2IntEnF} \\
+    \cline{3-4}
+     &  & \texttt{IO0IntClr} & \texttt{->IO0IntClr} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.14}
+  \caption{Funciones est\'andar CMSIS para \texttt{NVIC} y \texttt{SysTick} en el LPC1769}
+  \begin{tabularx}{0.95\textwidth}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.29\textwidth}|>{\raggedright\arraybackslash}X|}
+    \hline
+    \textbf{M\'odulo} & \textbf{Acci\'on requerida} & \textbf{Funci\'on CMSIS (driver)} \\
+    \hline
+    \multirow{6}{=}{\textbf{NVIC}} & Habilitar interrupci\'on & \texttt{NVIC\_EnableIRQ(IRQn\_Type IRQn)} \\
+    \cline{2-3}
+     & Deshabilitar interrupci\'on & \texttt{NVIC\_DisableIRQ(IRQn\_Type IRQn)} \\
+    \cline{2-3}
+     & Obtener estado \textit{pending} & \texttt{uint32\_t NVIC\_GetPendingIRQ(IRQn\_Type IRQn)} \\
+    \cline{2-3}
+     & Forzar estado \textit{pending} & \texttt{NVIC\_SetPendingIRQ(IRQn\_Type IRQn)} \\
+    \cline{2-3}
+     & Limpiar estado \textit{pending} & \texttt{NVIC\_ClearPendingIRQ(IRQn\_Type IRQn)} \\
+    \cline{2-3}
+     & Configurar prioridad & \texttt{NVIC\_SetPriority(IRQn\_Type IRQn, uint32\_t priority)} \\
+    \hline
+    \textbf{SysTick} & Configurar e iniciar & \texttt{SysTick\_Config(uint32\_t ticks)} \\
+    \hline
+  \end{tabularx}
+\end{table}
