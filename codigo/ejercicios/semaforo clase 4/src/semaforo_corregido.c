@@ -1,5 +1,8 @@
 #ifdef __USE_CMSIS
 #include "LPC17xx.h"
+#include "lpc17xx_gpio.h"
+#include "lpc17xx_pinsel.h"
+#include "lpc17xx_uart.h"
 #endif
 
 #include <stdint.h>
