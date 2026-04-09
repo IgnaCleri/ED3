@@ -1,0 +1,16 @@
+\section{Unidad 2: Manejo de puertos y GPIO}
+
+Esta unidad reune dos bloques que se usan en casi cualquier configuracion del LPC1769. Primero se define la funcion y el modo electrico del pin desde el \textit{Pin Connect Block}. Despues, si el pin queda en funcion GPIO, se trabaja con el bloque \textit{Fast GPIO}.
+
+El orden operativo base de esta unidad es:
+
+\begin{itemize}
+  \item elegir el pin fisico o la senal que se quiere usar;
+  \item seleccionar su funcion en \texttt{PINSEL};
+  \item seleccionar su modo electrico en \texttt{PINMODE};
+  \item activar \textit{open-drain} o configuracion especial de \texttt{I2C0} si corresponde;
+  \item recien despues usar los registros \texttt{FIO*} si el pin trabaja como GPIO.
+\end{itemize}
+
+\input{unidad02_pinconnect.tex}
+\input{unidad02_gpio.tex}

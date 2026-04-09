@@ -1,0 +1,241 @@
+\subsection{Pin Connect Block}
+
+\subsubsection{Orden de configuracion}
+Antes de usar un pin del LPC1769 conviene fijar siempre este recorrido:
+
+\begin{itemize}
+  \item identificar el pin y sus funciones alternativas en la tabla \texttt{PINSEL};
+  \item seleccionar la funcion del pin con el par de bits correspondiente;
+  \item seleccionar el modo electrico del pin con \texttt{PINMODE};
+  \item habilitar \textit{open-drain} con \texttt{PINMODE\_OD} si la senal lo requiere;
+  \item revisar excepciones de \texttt{I2C0}, USB y traza antes de continuar con el periferico o con GPIO.
+\end{itemize}
+
+\subsubsection{Acceso conceptual desde CMSIS}
+\begin{itemize}
+  \item \texttt{LPC\_PINCON->PINSEL0} a \texttt{LPC\_PINCON->PINSEL10}
+  \item \texttt{LPC\_PINCON->PINMODE0} a \texttt{LPC\_PINCON->PINMODE9}
+  \item \texttt{LPC\_PINCON->PINMODE\_OD0} a \texttt{LPC\_PINCON->PINMODE\_OD4}
+  \item \texttt{LPC\_PINCON->I2CPADCFG}
+\end{itemize}
+
+\subsubsection{Notas puntuales de placa}
+\begin{itemize}
+  \item En la placa LPCXpresso, \texttt{P0.22}, \texttt{P3.25} y \texttt{P3.26} quedan asociados a los LED rojo, verde y azul.
+  \item \texttt{P2.10} aparece expuesto y suele usarse en ejemplos de entrada digital o senal de habilitacion.
+  \item \texttt{P0.27} y \texttt{P0.28} aparecen asociados a \texttt{I2C0}, por lo que conviene tratarlos como caso especial desde el comienzo.
+\end{itemize}
+
+\subsubsection{Cómo leer este capítulo}
+La \texttt{Table 74} resume qué registro \texttt{PINSELx} controla cada rango de pines del LPC17xx.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Resumen de registros \texttt{PINSEL}}
+  \begin{tabularx}{0.92\textwidth}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.16\textwidth}|}
+    \hline
+    \textbf{Registro} & \textbf{Pines o función controlada} & \textbf{Tabla} \\
+    \hline
+    \texttt{PINSEL0} & \texttt{P0[15:0]} & Table 79 \\
+    \hline
+    \texttt{PINSEL1} & \texttt{P0[31:16]} & Table 80 \\
+    \hline
+    \texttt{PINSEL2} & \texttt{P1[15:0]} (Ethernet) & Table 81 \\
+    \hline
+    \texttt{PINSEL3} & \texttt{P1[31:16]} & Table 82 \\
+    \hline
+    \texttt{PINSEL4} & \texttt{P2[15:0]} & Table 83 \\
+    \hline
+    \texttt{PINSEL5} & \texttt{P2[31:16]} & No usado \\
+    \hline
+    \texttt{PINSEL6} & \texttt{P3[15:0]} & No usado \\
+    \hline
+    \texttt{PINSEL7} & \texttt{P3[31:16]} & Table 84 \\
+    \hline
+    \texttt{PINSEL8} & \texttt{P4[15:0]} & No usado \\
+    \hline
+    \texttt{PINSEL9} & \texttt{P4[31:16]} & Table 85 \\
+    \hline
+    \texttt{PINSEL10} & Habilitación del puerto de traza & Table 86 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsubsection{Descripción}
+El \textit{pin connect block} permite que la mayoría de los pines del microcontrolador expongan más de una función potencial. Los registros de configuración gobiernan los multiplexores que conectan el pin físico con los periféricos internos.
+
+Los periféricos deben conectarse a los pines apropiados antes de habilitarlos y antes de habilitar sus interrupciones asociadas. La actividad de una función periférica activa que no esté mapeada a un pin relacionado debe considerarse indefinida.
+
+Seleccionar una única función en un pin excluye las demás funciones periféricas disponibles sobre ese mismo pin. Aun así, la entrada GPIO permanece conectada y puede leerse por software.
+
+\subsubsection{Valores de selección de función de pin}
+Los registros \texttt{PINSEL} controlan la función expuesta por cada pin. Cada par de bits de \texttt{PINSEL0} a \texttt{PINSEL9} corresponde a un pin específico.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Bits de selección de función de pin}
+  \begin{tabularx}{0.9\textwidth}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+    \hline
+    \textbf{Valor en \texttt{PINSEL0} a \texttt{PINSEL9}} & \textbf{Función} & \textbf{Valor tras reset} \\
+    \hline
+    \texttt{00} & Función primaria, normalmente GPIO. & \texttt{00} \\
+    \hline
+    \texttt{01} & Primera función alternativa. & --- \\
+    \hline
+    \texttt{10} & Segunda función alternativa. & --- \\
+    \hline
+    \texttt{11} & Tercera función alternativa. & --- \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+La regla práctica para ubicar los bits de un pin \texttt{Px.y} es:
+
+\begin{itemize}
+  \item si \texttt{y <= 15}, el pin se configura en \texttt{PINSEL(2x)};
+  \item si \texttt{y >= 16}, el pin se configura en \texttt{PINSEL(2x+1)};
+  \item dentro del registro, el par de bits es \texttt{2y:2y+1} para la mitad baja y \texttt{2(y-16):2(y-16)+1} para la mitad alta.
+\end{itemize}
+
+El bit de dirección en los registros GPIO sólo tiene efecto cuando el pin está configurado como GPIO. Para las demás funciones la dirección queda controlada automáticamente por el periférico.
+
+\paragraph{Conexiones múltiples}
+Una misma función periférica puede estar disponible en más de un pin. Si una salida periférica se asigna a varios pines, la señal aparece en todos ellos. Si una entrada periférica se asigna a varios pines, el periférico toma la señal del pin con menor número de puerto y, dentro del mismo puerto, del pin con menor número.
+
+\input{unidad02_pinconnect_pinsel_tables.tex}
+
+\subsubsection{Valores de selección del modo de pin}
+Los registros \texttt{PINMODE} controlan el modo de entrada de todos los puertos. Esto incluye las resistencias internas \textit{pull-up}/\textit{pull-down} y el modo especial \textit{open-drain}. La selección de \textit{pull-up}/\textit{pull-down} aplica a cualquier función del pin salvo en los pines \texttt{I2C0} y USB. El modo efectivo usa tres bits por pin: dos bits en \texttt{PINMODE} y un bit adicional en \texttt{PINMODE\_OD}.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Bits de selección de modo de pin}
+  \begin{tabularx}{0.9\textwidth}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+    \hline
+    \textbf{Valor en \texttt{PINMODE0} a \texttt{PINMODE9}} & \textbf{Función} & \textbf{Valor tras reset} \\
+    \hline
+    \texttt{00} & Resistencia interna \textit{pull-up} habilitada. & \texttt{00} \\
+    \hline
+    \texttt{01} & Modo \textit{repeater}. & --- \\
+    \hline
+    \texttt{10} & Sin \textit{pull-up} ni \textit{pull-down}. & --- \\
+    \hline
+    \texttt{11} & Resistencia interna \textit{pull-down} habilitada. & --- \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{\textit{Pull-up}:} polariza el pin a nivel alto cuando no hay conducción externa.
+  \item \textbf{\textit{Pull-down}:} polariza el pin a nivel bajo cuando no hay conducción externa.
+  \item \textbf{\textit{Neither}:} deja el nodo sin polarización interna; sólo conviene cuando existe una red externa definida.
+  \item \textbf{\textit{Repeater}:} habilita \textit{pull-up} si el pin está en alto y \textit{pull-down} si está en bajo, reteniendo el último estado conocido mientras el pin sea entrada y no esté manejado externamente.
+  \item \textbf{Límite de \textit{repeater}:} la retención no aplica en \textit{Deep Power-down}.
+\end{itemize}
+
+\input{unidad02_pinconnect_pinmode_tables.tex}
+
+\subsubsection{Modo \textit{open-drain}}
+Los registros \texttt{PINMODE\_OD} controlan el modo \textit{open-drain}. Cuando un pin configurado como salida escribe \texttt{0}, el pad conduce a masa. Cuando escribe \texttt{1}, el driver de salida se desactiva, equivalente a liberar el pin.
+
+\begin{table}[H]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Bits de selección de modo \textit{open-drain}}
+  \begin{tabularx}{0.9\textwidth}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+    \hline
+    \textbf{Valor en \texttt{PINMODE\_OD0} a \texttt{PINMODE\_OD4}} & \textbf{Función} & \textbf{Valor tras reset} \\
+    \hline
+    \texttt{0} & Modo normal, no \textit{open-drain}. & \texttt{0} \\
+    \hline
+    \texttt{1} & Modo \textit{open-drain}. & --- \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\paragraph{Efecto de \texttt{PINMODE} en \textit{open-drain}}
+El valor de \texttt{PINMODE} normalmente sólo aplica cuando el pin es entrada. En \textit{open-drain}, ese modo no aplica mientras el pin está conduciendo un \texttt{0}. En cambio, cuando el pin vale \texttt{1} y el driver queda apagado, la configuración de \texttt{PINMODE} vuelve a ser efectiva. Esto permite, por ejemplo, una salida \textit{open-drain} con \textit{pull-up} interno activo sólo cuando el pin no está forzando el nivel bajo.
+
+\input{unidad02_pinconnect_pinmode_od_tables.tex}
+
+\subsubsection{Descripción de registros}
+El módulo de control de pines incluye los registros de selección de función, modo de entrada, modo \textit{open-drain} y configuración especial del bloque \texttt{I2C0}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.34\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|>{\centering\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\caption{Mapa de registros del Pin Connect Block}\\
+\hline
+\textbf{Nombre} & \textbf{Descripción} & \textbf{Acceso} & \textbf{Reset} & \textbf{Dirección} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Nombre} & \textbf{Descripción} & \textbf{Acceso} & \textbf{Reset} & \textbf{Dirección} \\
+\hline
+\endhead
+\texttt{PINSEL0} & Registro 0 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C000} \\
+\hline
+\texttt{PINSEL1} & Registro 1 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C004} \\
+\hline
+\texttt{PINSEL2} & Registro 2 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C008} \\
+\hline
+\texttt{PINSEL3} & Registro 3 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C00C} \\
+\hline
+\texttt{PINSEL4} & Registro 4 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C010} \\
+\hline
+\texttt{PINSEL7} & Registro 7 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C01C} \\
+\hline
+\texttt{PINSEL8} & Registro 8 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C020} \\
+\hline
+\texttt{PINSEL9} & Registro 9 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C024} \\
+\hline
+\texttt{PINSEL10} & Registro 10 de selección de función de pin. & R/W & \texttt{0} & \texttt{0x4002 C028} \\
+\hline
+\texttt{PINMODE0} & Registro 0 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C040} \\
+\hline
+\texttt{PINMODE1} & Registro 1 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C044} \\
+\hline
+\texttt{PINMODE2} & Registro 2 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C048} \\
+\hline
+\texttt{PINMODE3} & Registro 3 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C04C} \\
+\hline
+\texttt{PINMODE4} & Registro 4 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C050} \\
+\hline
+\texttt{PINMODE5} & Registro 5 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C054} \\
+\hline
+\texttt{PINMODE6} & Registro 6 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C058} \\
+\hline
+\texttt{PINMODE7} & Registro 7 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C05C} \\
+\hline
+\texttt{PINMODE9} & Registro 9 de selección de modo de pin. & R/W & \texttt{0} & \texttt{0x4002 C064} \\
+\hline
+\texttt{PINMODE\_OD0} & Registro 0 de control de modo \textit{open-drain}. & R/W & \texttt{0} & \texttt{0x4002 C068} \\
+\hline
+\texttt{PINMODE\_OD1} & Registro 1 de control de modo \textit{open-drain}. & R/W & \texttt{0} & \texttt{0x4002 C06C} \\
+\hline
+\texttt{PINMODE\_OD2} & Registro 2 de control de modo \textit{open-drain}. & R/W & \texttt{0} & \texttt{0x4002 C070} \\
+\hline
+\texttt{PINMODE\_OD3} & Registro 3 de control de modo \textit{open-drain}. & R/W & \texttt{0} & \texttt{0x4002 C074} \\
+\hline
+\texttt{PINMODE\_OD4} & Registro 4 de control de modo \textit{open-drain}. & R/W & \texttt{0} & \texttt{0x4002 C078} \\
+\hline
+\texttt{I2CPADCFG} & Registro de configuración de pines \texttt{I2C0}. & R/W & \texttt{0} & \texttt{0x4002 C07C} \\
+\hline
+\end{longtable}
+
+\noindent\textit{Nota:} el valor de reset refleja sólo los bits usados; no incluye el contenido de bits reservados.
+
+\scriptsize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\LTpre}{4pt}
+\setlength{\LTpost}{10pt}
+
+\subsubsection{Configuración especial de \texttt{I2C0}}
+El registro \texttt{I2CPADCFG} configura únicamente los pines \texttt{P0.27} y \texttt{P0.28} cuando se usan con \texttt{I2C0}. Para \textit{Standard Mode} o \textit{Fast Mode}, sus bits deben quedar en \texttt{0}. Para \textit{Fast Mode Plus} se habilitan los bits de manejo reforzado. Si esos pines se usan fuera de \texttt{I2C0}, también puede ajustarse el filtrado y el control de \textit{slew rate} desde este registro.
+
+\input{unidad02_pinconnect_i2cpadcfg_table.tex}

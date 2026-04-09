@@ -1,0 +1,34 @@
+\paragraph{I2C Pin Configuration register (\texttt{I2CPADCFG} - \texttt{0x4002 C07C})}
+Este registro sólo afecta a los pines de la interfaz \texttt{I2C0} (\texttt{P0.27}/\texttt{P0.28}) y soporta distintos modos de operación del bus. Para I\textsuperscript{2}C estándar o \textit{Fast Mode}, sus cuatro bits deben permanecer en \texttt{0}. Para \textit{Fast Mode Plus}, los bits \texttt{SDADRV0} y \texttt{SCLDRV0} deben valer \texttt{1}. Si esos pines se usan fuera de I\textsuperscript{2}C, puede ser útil desactivar el filtrado de glitches y el control de \textit{slew rate} poniendo \texttt{SDAI2C0} y \texttt{SCLI2C0} en \texttt{1}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.42\textwidth}|>{\centering\arraybackslash}p{0.06\textwidth}|}
+\caption{I2C Pin Configuration register (\texttt{I2CPADCFG}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{SDADRV0} & \texttt{0} & El pin \texttt{SDA0} (\texttt{P0.27}) usa modo de conducción estándar. & \texttt{0} \\
+\hline
+\texttt{0} & \texttt{SDADRV0} & \texttt{1} & El pin \texttt{SDA0} (\texttt{P0.27}) usa modo \textit{Fast Mode Plus}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{SDAI2C0} & \texttt{0} & \texttt{SDA0} mantiene habilitados el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{SDAI2C0} & \texttt{1} & \texttt{SDA0} deshabilita el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{SCLDRV0} & \texttt{0} & El pin \texttt{SCL0} (\texttt{P0.28}) usa modo de conducción estándar. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{SCLDRV0} & \texttt{1} & El pin \texttt{SCL0} (\texttt{P0.28}) usa modo \textit{Fast Mode Plus}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{SCLI2C0} & \texttt{0} & \texttt{SCL0} mantiene habilitados el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{SCLI2C0} & \texttt{1} & \texttt{SCL0} deshabilita el filtrado de glitches y el control de \textit{slew rate}. & \texttt{0} \\
+\hline
+\texttt{31:4} & --- & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+
+\normalsize

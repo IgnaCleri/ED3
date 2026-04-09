@@ -1,0 +1,239 @@
+\paragraph{Open Drain Pin Mode select register 0 (\texttt{PINMODE\_OD0} - \texttt{0x4002 C068})}
+Controla el modo \textit{open-drain} para los pines del puerto 0. Un \texttt{0} mantiene el modo normal; un \texttt{1} habilita \textit{open-drain}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 0 (\texttt{PINMODE\_OD0}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{P0.00OD[3]} & Control \textit{open-drain} de \texttt{P0.0}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{P0.01OD[3]} & Control de \texttt{P0.1}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{P0.02OD} & Control de \texttt{P0.2}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{P0.03OD} & Control de \texttt{P0.3}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{4} & \texttt{P0.04OD} & Control de \texttt{P0.4}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{5} & \texttt{P0.05OD} & Control de \texttt{P0.5}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{6} & \texttt{P0.06OD} & Control de \texttt{P0.6}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{7} & \texttt{P0.07OD} & Control de \texttt{P0.7}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{8} & \texttt{P0.08OD} & Control de \texttt{P0.8}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{9} & \texttt{P0.09OD} & Control de \texttt{P0.9}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{10} & \texttt{P0.10OD[3]} & Control de \texttt{P0.10}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{11} & \texttt{P0.11OD[3]} & Control de \texttt{P0.11}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{14:12} & --- & Reserved. & NA \\
+\hline
+\texttt{15} & \texttt{P0.15OD} & Control de \texttt{P0.15}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{16} & \texttt{P0.16OD} & Control de \texttt{P0.16}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{17} & \texttt{P0.17OD} & Control de \texttt{P0.17}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{18} & \texttt{P0.18OD} & Control de \texttt{P0.18}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{19} & \texttt{P0.19OD[3]} & Control de \texttt{P0.19}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{20} & \texttt{P0.20OD[3]} & Control de \texttt{P0.20}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{21} & \texttt{P0.21OD} & Control de \texttt{P0.21}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{22} & \texttt{P0.22OD} & Control de \texttt{P0.22}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{23} & \texttt{P0.23OD} & Control de \texttt{P0.23}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{24} & \texttt{P0.24OD} & Control de \texttt{P0.24}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{25} & \texttt{P0.25OD} & Control de \texttt{P0.25}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{26} & \texttt{P0.26OD} & Control de \texttt{P0.26}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{28:27} & --- [2] & Reserved. & NA \\
+\hline
+\texttt{29} & \texttt{P0.29OD} & Control de \texttt{P0.29}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{30} & \texttt{P0.30OD} & Control de \texttt{P0.30}; ver \texttt{P0.00OD}. & \texttt{0} \\
+\hline
+\texttt{31} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}\\
+\textit{[2] \texttt{P0.27} y \texttt{P0.28} deben configurarse mediante \texttt{I2CPADCFG} cuando se usan como bus I\textsuperscript{2}C. Los bits 27 y 28 de \texttt{PINMODE\_OD0} no tienen efecto sobre esos pines.}\\
+\textit{[3] Los pares de pines \texttt{P0.0/P0.1}, \texttt{P0.10/P0.11} y \texttt{P0.19/P0.20} pueden utilizarse como buses I\textsuperscript{2}C sobre pines estándar; en ese caso deben configurarse en \textit{open-drain} mediante \texttt{PINMODE\_OD0}.}
+
+\paragraph{Open Drain Pin Mode select register 1 (\texttt{PINMODE\_OD1} - \texttt{0x4002 C06C})}
+Controla el modo \textit{open-drain} para los pines del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 1 (\texttt{PINMODE\_OD1}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{P1.00OD} & Control \textit{open-drain} de \texttt{P1.0}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{P1.01OD} & Control de \texttt{P1.1}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{3:2} & --- & Reserved. & NA \\
+\hline
+\texttt{4} & \texttt{P1.04OD} & Control de \texttt{P1.4}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{7:5} & --- & Reserved. & NA \\
+\hline
+\texttt{8} & \texttt{P1.08OD} & Control de \texttt{P1.8}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{9} & \texttt{P1.09OD} & Control de \texttt{P1.9}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{10} & \texttt{P1.10OD} & Control de \texttt{P1.10}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{13:11} & --- & Reserved. & NA \\
+\hline
+\texttt{14} & \texttt{P1.14OD} & Control de \texttt{P1.14}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{15} & \texttt{P1.15OD} & Control de \texttt{P1.15}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{16} & \texttt{P1.16OD[1]} & Control de \texttt{P1.16}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{17} & \texttt{P1.17OD[1]} & Control de \texttt{P1.17}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{18} & \texttt{P1.18OD} & Control de \texttt{P1.18}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{19} & \texttt{P1.19OD} & Control de \texttt{P1.19}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{20} & \texttt{P1.20OD} & Control de \texttt{P1.20}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{21} & \texttt{P1.21OD[1]} & Control de \texttt{P1.21}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{22} & \texttt{P1.22OD} & Control de \texttt{P1.22}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{23} & \texttt{P1.23OD} & Control de \texttt{P1.23}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{24} & \texttt{P1.24OD} & Control de \texttt{P1.24}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{25} & \texttt{P1.25OD} & Control de \texttt{P1.25}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{26} & \texttt{P1.26OD} & Control de \texttt{P1.26}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{27} & \texttt{P1.27OD[1]} & Control de \texttt{P1.27}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{28} & \texttt{P1.28OD} & Control de \texttt{P1.28}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{29} & \texttt{P1.29OD} & Control de \texttt{P1.29}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{30} & \texttt{P1.30OD} & Control de \texttt{P1.30}; ver \texttt{P1.00OD}. & \texttt{0} \\
+\hline
+\texttt{31} & \texttt{P1.31OD} & Control de \texttt{P1.31}. & \texttt{0} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Open Drain Pin Mode select register 2 (\texttt{PINMODE\_OD2} - \texttt{0x4002 C070})}
+Controla el modo \textit{open-drain} para los pines del puerto 2.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 2 (\texttt{PINMODE\_OD2}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{0} & \texttt{P2.00OD} & Control \textit{open-drain} de \texttt{P2.0}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{1} & \texttt{P2.01OD} & Control de \texttt{P2.1}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{2} & \texttt{P2.02OD} & Control de \texttt{P2.2}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{P2.03OD} & Control de \texttt{P2.3}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{4} & \texttt{P2.04OD} & Control de \texttt{P2.4}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{5} & \texttt{P2.05OD} & Control de \texttt{P2.5}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{6} & \texttt{P2.06OD} & Control de \texttt{P2.6}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{7} & \texttt{P2.07OD} & Control de \texttt{P2.7}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{8} & \texttt{P2.08OD} & Control de \texttt{P2.8}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{9} & \texttt{P2.09OD} & Control de \texttt{P2.9}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{10} & \texttt{P2.10OD} & Control de \texttt{P2.10}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{11} & \texttt{P2.11OD[1]} & Control de \texttt{P2.11}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{12} & \texttt{P2.12OD[1]} & Control de \texttt{P2.12}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{13} & \texttt{P2.13OD[1]} & Control de \texttt{P2.13}; ver \texttt{P2.00OD}. & \texttt{0} \\
+\hline
+\texttt{31:14} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Open Drain Pin Mode select register 3 (\texttt{PINMODE\_OD3} - \texttt{0x4002 C074})}
+Controla el modo \textit{open-drain} para los pines del puerto 3.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 3 (\texttt{PINMODE\_OD3}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{24:0} & --- & Reserved. & NA \\
+\hline
+\texttt{25} & \texttt{P3.25OD[1]} & Control \textit{open-drain} de \texttt{P3.25}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{26} & \texttt{P3.26OD[1]} & Control de \texttt{P3.26}; ver \texttt{P3.25OD}. & \texttt{0} \\
+\hline
+\texttt{31:27} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Open Drain Pin Mode select register 4 (\texttt{PINMODE\_OD4} - \texttt{0x4002 C078})}
+Controla el modo \textit{open-drain} para los pines del puerto 4.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Open Drain Pin Mode select register 4 (\texttt{PINMODE\_OD4}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{27:0} & --- & Reserved. & NA \\
+\hline
+\texttt{28} & \texttt{P4.28OD} & Control \textit{open-drain} de \texttt{P4.28}. \texttt{0}: modo normal. \texttt{1}: \textit{open-drain}. & \texttt{0} \\
+\hline
+\texttt{29} & \texttt{P4.29OD} & Control de \texttt{P4.29}; ver \texttt{P4.28OD}. & \texttt{0} \\
+\hline
+\texttt{31:30} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+

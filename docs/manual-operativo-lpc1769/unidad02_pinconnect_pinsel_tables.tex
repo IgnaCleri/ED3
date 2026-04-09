@@ -1,0 +1,295 @@
+\paragraph{Pin Function Select register 0 (\texttt{PINSEL0} - \texttt{0x4002 C000})}
+Controla la mitad baja del puerto 0. El bit de dirección en \texttt{FIO0DIR} sólo es efectivo cuando se selecciona la función GPIO.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 0 (\texttt{PINSEL0}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.0} & GPIO Port 0.0 & \texttt{RD1} & \texttt{TXD3} & \texttt{SDA1} & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.1} & GPIO Port 0.1 & \texttt{TD1} & \texttt{RXD3} & \texttt{SCL1} & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.2} & GPIO Port 0.2 & \texttt{TXD0} & \texttt{AD0.7} & Reserved & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.3} & GPIO Port 0.3 & \texttt{RXD0} & \texttt{AD0.6} & Reserved & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.4[1]} & GPIO Port 0.4 & \texttt{I2SRX\_CLK} & \texttt{RD2} & \texttt{CAP2.0} & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.5[1]} & GPIO Port 0.5 & \texttt{I2SRX\_WS} & \texttt{TD2} & \texttt{CAP2.1} & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.6} & GPIO Port 0.6 & \texttt{I2SRX\_SDA} & \texttt{SSEL1} & \texttt{MAT2.0} & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.7} & GPIO Port 0.7 & \texttt{I2STX\_CLK} & \texttt{SCK1} & \texttt{MAT2.1} & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.8} & GPIO Port 0.8 & \texttt{I2STX\_WS} & \texttt{MISO1} & \texttt{MAT2.2} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.9} & GPIO Port 0.9 & \texttt{I2STX\_SDA} & \texttt{MOSI1} & \texttt{MAT2.3} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.10} & GPIO Port 0.10 & \texttt{TXD2} & \texttt{SDA2} & \texttt{MAT3.0} & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P0.11} & GPIO Port 0.11 & \texttt{RXD2} & \texttt{SCL2} & \texttt{MAT3.1} & \texttt{00} \\
+\hline
+\texttt{29:24} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{31:30} & \texttt{P0.15} & GPIO Port 0.15 & \texttt{TXD1} & \texttt{SCK0} & \texttt{SCK} & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Pin Function Select register 1 (\texttt{PINSEL1} - \texttt{0x4002 C004})}
+Controla la mitad alta del puerto 0.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 1 (\texttt{PINSEL1}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.16} & GPIO Port 0.16 & \texttt{RXD1} & \texttt{SSEL0} & \texttt{SSEL} & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.17} & GPIO Port 0.17 & \texttt{CTS1} & \texttt{MISO0} & \texttt{MISO} & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.18} & GPIO Port 0.18 & \texttt{DCD1} & \texttt{MOSI0} & \texttt{MOSI} & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.19[1]} & GPIO Port 0.19 & \texttt{DSR1} & Reserved & \texttt{SDA1} & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.20[1]} & GPIO Port 0.20 & \texttt{DTR1} & Reserved & \texttt{SCL1} & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.21[1]} & GPIO Port 0.21 & \texttt{RI1} & Reserved & \texttt{RD1} & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.22} & GPIO Port 0.22 & \texttt{RTS1} & Reserved & \texttt{TD1} & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.23[1]} & GPIO Port 0.23 & \texttt{AD0.0} & \texttt{I2SRX\_CLK} & \texttt{CAP3.0} & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.24[1]} & GPIO Port 0.24 & \texttt{AD0.1} & \texttt{I2SRX\_WS} & \texttt{CAP3.1} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.25} & GPIO Port 0.25 & \texttt{AD0.2} & \texttt{I2SRX\_SDA} & \texttt{TXD3} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.26} & GPIO Port 0.26 & \texttt{AD0.3} & \texttt{AOUT} & \texttt{RXD3} & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P0.27[1][2]} & GPIO Port 0.27 & \texttt{SDA0} & \texttt{USB\_SDA} & Reserved & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P0.28[1][2]} & GPIO Port 0.28 & \texttt{SCL0} & \texttt{USB\_SCL} & Reserved & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P0.29} & GPIO Port 0.29 & \texttt{USB\_D+} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{29:28} & \texttt{P0.30} & GPIO Port 0.30 & \texttt{USB\_D-} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{31:30} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}\\
+\textit{[2] \texttt{P0.27} y \texttt{P0.28} son pines \textit{open-drain} para compatibilidad con bus I\textsuperscript{2}C.}
+
+\paragraph{Pin Function Select register 2 (\texttt{PINSEL2} - \texttt{0x4002 C008})}
+Controla la mitad baja del puerto 1, asociada principalmente a señales Ethernet.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 2 (\texttt{PINSEL2}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.0} & GPIO Port 1.0 & \texttt{ENET\_TXD0} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.1} & GPIO Port 1.1 & \texttt{ENET\_TXD1} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{7:4} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{9:8} & \texttt{P1.4} & GPIO Port 1.4 & \texttt{ENET\_TX\_EN} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{15:10} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{17:16} & \texttt{P1.8} & GPIO Port 1.8 & \texttt{ENET\_CRS} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.9} & GPIO Port 1.9 & \texttt{ENET\_RXD0} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.10} & GPIO Port 1.10 & \texttt{ENET\_RXD1} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{27:22} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{29:28} & \texttt{P1.14} & GPIO Port 1.14 & \texttt{ENET\_RX\_ER} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.15} & GPIO Port 1.15 & \texttt{ENET\_REF\_CLK} & Reserved & Reserved & \texttt{00} \\
+\hline
+\end{longtable}
+
+\paragraph{Pin Function Select register 3 (\texttt{PINSEL3} - \texttt{0x4002 C00C})}
+Controla la mitad alta del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 3 (\texttt{PINSEL3}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.16[1]} & GPIO Port 1.16 & \texttt{ENET\_MDC} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.17[1]} & GPIO Port 1.17 & \texttt{ENET\_MDIO} & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P1.18} & GPIO Port 1.18 & \texttt{USB\_UP\_LED} & \texttt{PWM1.1} & \texttt{CAP1.0} & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P1.19} & GPIO Port 1.19 & \texttt{MCOA0} & \texttt{USB\_PPWR} & \texttt{CAP1.1} & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P1.20} & GPIO Port 1.20 & \texttt{MCI0} & \texttt{PWM1.2} & \texttt{SCK0} & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P1.21[1]} & GPIO Port 1.21 & \texttt{MCABORT} & \texttt{PWM1.3} & \texttt{SSEL0} & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P1.22} & GPIO Port 1.22 & \texttt{MCOB0} & \texttt{USB\_PWRD} & \texttt{MAT1.0} & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P1.23} & GPIO Port 1.23 & \texttt{MCI1} & \texttt{PWM1.4} & \texttt{MISO0} & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P1.24} & GPIO Port 1.24 & \texttt{MCI2} & \texttt{PWM1.5} & \texttt{MOSI0} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.25} & GPIO Port 1.25 & \texttt{MCOA1} & Reserved & \texttt{MAT1.1} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.26} & GPIO Port 1.26 & \texttt{MCOB1} & \texttt{PWM1.6} & \texttt{CAP0.0} & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P1.27[1]} & GPIO Port 1.27 & \texttt{CLKOUT} & \texttt{USB\_OVRCR} & \texttt{CAP0.1} & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P1.28} & GPIO Port 1.28 & \texttt{MCOA2} & \texttt{PCAP1.0} & \texttt{MAT0.0} & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P1.29} & GPIO Port 1.29 & \texttt{MCOB2} & \texttt{PCAP1.1} & \texttt{MAT0.1} & \texttt{00} \\
+\hline
+\texttt{29:28} & \texttt{P1.30} & GPIO Port 1.30 & Reserved & \texttt{VBUS} & \texttt{AD0.4} & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.31} & GPIO Port 1.31 & Reserved & \texttt{SCK1} & \texttt{AD0.5} & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Pin Function Select register 4 (\texttt{PINSEL4} - \texttt{0x4002 C010})}
+Controla la mitad baja del puerto 2.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 4 (\texttt{PINSEL4}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P2.0} & GPIO Port 2.0 & \texttt{PWM1.1} & \texttt{TXD1} & Reserved & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P2.1} & GPIO Port 2.1 & \texttt{PWM1.2} & \texttt{RXD1} & Reserved & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P2.2} & GPIO Port 2.2 & \texttt{PWM1.3} & \texttt{CTS1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P2.3} & GPIO Port 2.3 & \texttt{PWM1.4} & \texttt{DCD1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P2.4} & GPIO Port 2.4 & \texttt{PWM1.5} & \texttt{DSR1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P2.5} & GPIO Port 2.5 & \texttt{PWM1.6} & \texttt{DTR1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P2.6} & GPIO Port 2.6 & \texttt{PCAP1.0} & \texttt{RI1} & Reserved [2] & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P2.7} & GPIO Port 2.7 & \texttt{RD2} & \texttt{RTS1} & Reserved & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P2.8} & GPIO Port 2.8 & \texttt{TD2} & \texttt{TXD2} & \texttt{ENET\_MDC} & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P2.9} & GPIO Port 2.9 & \texttt{USB\_CONNECT} & \texttt{RXD2} & \texttt{ENET\_MDIO} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P2.10} & GPIO Port 2.10 & \texttt{EINT0} & \texttt{NMI} & Reserved & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P2.11[1]} & GPIO Port 2.11 & \texttt{EINT1} & Reserved & \texttt{I2STX\_CLK} & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P2.12[1]} & GPIO Port 2.12 & \texttt{EINT2} & Reserved & \texttt{I2STX\_WS} & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P2.13[1]} & GPIO Port 2.13 & \texttt{EINT3} & Reserved & \texttt{I2STX\_SDA} & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}\\
+\textit{[2] Estos pines también soportan traza de depuración al seleccionarse vía herramienta de desarrollo o escribiendo en \texttt{PINSEL10}.}
+
+\paragraph{Pin Function Select register 7 (\texttt{PINSEL7} - \texttt{0x4002 C01C})}
+Controla la mitad alta del puerto 3.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 7 (\texttt{PINSEL7}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{17:0} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\texttt{19:18} & \texttt{P3.25[1]} & GPIO Port 3.25 & Reserved & \texttt{MAT0.0} & \texttt{PWM1.2} & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P3.26[1]} & GPIO Port 3.26 & \texttt{STCLK} & \texttt{MAT0.1} & \texttt{PWM1.3} & \texttt{00} \\
+\hline
+\texttt{31:22} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{0} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Pin Function Select register 9 (\texttt{PINSEL9} - \texttt{0x4002 C024})}
+Controla la mitad alta del puerto 4.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|}
+\caption{Pin function select register 9 (\texttt{PINSEL9}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Pin} & \textbf{Función 00} & \textbf{Función 01} & \textbf{Función 10} & \textbf{Función 11} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{23:0} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P4.28} & GPIO Port 4.28 & \texttt{RX\_MCLK} & \texttt{MAT2.0} & \texttt{TXD3} & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P4.29} & GPIO Port 4.29 & \texttt{TX\_MCLK} & \texttt{MAT2.1} & \texttt{RXD3} & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved & Reserved & Reserved & Reserved & \texttt{00} \\
+\hline
+\end{longtable}
+
+\paragraph{Pin Function Select register 10 (\texttt{PINSEL10} - \texttt{0x4002 C028})}
+Sólo el bit 3 de este registro se usa para controlar la función \texttt{TRACE} sobre \texttt{P2.2} a \texttt{P2.6}.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.43\textwidth}|>{\centering\arraybackslash}p{0.06\textwidth}|}
+\caption{Pin function select register 10 (\texttt{PINSEL10}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{2:0} & --- & --- & Reserved. El software no debe escribir \texttt{1} en estos bits. & NA \\
+\hline
+\texttt{3} & \texttt{GPIO/TRACE} & \texttt{0} & La interfaz TPIU está deshabilitada. & \texttt{0} \\
+\hline
+\texttt{3} & \texttt{GPIO/TRACE} & \texttt{1} & La interfaz TPIU está habilitada. Las señales TPIU aparecen en sus pines independientemente del contenido de \texttt{PINSEL4}. & \texttt{0} \\
+\hline
+\texttt{31:4} & --- & --- & Reserved. El software no debe escribir \texttt{1} en estos bits. & NA \\
+\hline
+\end{longtable}
+

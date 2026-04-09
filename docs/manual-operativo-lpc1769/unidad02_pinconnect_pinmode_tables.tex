@@ -1,0 +1,267 @@
+\paragraph{Pin Mode select register 0 (\texttt{PINMODE0} - \texttt{0x4002 C040})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 0 a 15 del puerto 0.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 0 (\texttt{PINMODE0}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.00MODE} & Control de resistencia interna para \texttt{P0.0}. \texttt{00}: \textit{pull-up}; \texttt{01}: \textit{repeater}; \texttt{10}: sin \textit{pull}; \texttt{11}: \textit{pull-down}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.01MODE} & Control de \texttt{P0.1}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.02MODE} & Control de \texttt{P0.2}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.03MODE} & Control de \texttt{P0.3}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.04MODE[1]} & Control de \texttt{P0.4}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.05MODE[1]} & Control de \texttt{P0.5}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.06MODE} & Control de \texttt{P0.6}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.07MODE} & Control de \texttt{P0.7}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.08MODE} & Control de \texttt{P0.8}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.09MODE} & Control de \texttt{P0.9}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.10MODE} & Control de \texttt{P0.10}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P0.11MODE} & Control de \texttt{P0.11}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{29:24} & --- & Reserved. & NA \\
+\hline
+\texttt{31:30} & \texttt{P0.15MODE} & Control de \texttt{P0.15}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Pin Mode select register 1 (\texttt{PINMODE1} - \texttt{0x4002 C044})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 26 del puerto 0.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 1 (\texttt{PINMODE1}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P0.16MODE} & Control de \texttt{P0.16}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P0.17MODE} & Control de \texttt{P0.17}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P0.18MODE} & Control de \texttt{P0.18}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P0.19MODE[1]} & Control de \texttt{P0.19}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P0.20MODE[1]} & Control de \texttt{P0.20}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P0.21MODE[1]} & Control de \texttt{P0.21}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P0.22MODE} & Control de \texttt{P0.22}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P0.23MODE[1]} & Control de \texttt{P0.23}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P0.24MODE[1]} & Control de \texttt{P0.24}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P0.25MODE} & Control de \texttt{P0.25}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P0.26MODE} & Control de \texttt{P0.26}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{29:22} & --- & Reserved. & NA \\
+\hline
+\texttt{31:30} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Excepciones eléctricas críticas de \texttt{PINMODE1}}
+El modo de pin no puede seleccionarse para \texttt{P0[27]} a \texttt{P0[30]}. Los pines \texttt{P0.27} y \texttt{P0.28} son pines dedicados I\textsuperscript{2}C \textit{open-drain} sin \textit{pull-up}/\textit{pull-down} configurable. Los pines \texttt{P0.29} y \texttt{P0.30} son específicos de USB y tampoco tienen resistencias configurables. Además, \texttt{P0.29} y \texttt{P0.30} deben compartir la misma dirección porque operan como una unidad para la función USB.
+
+\paragraph{Pin Mode select register 2 (\texttt{PINMODE2} - \texttt{0x4002 C048})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 0 a 15 del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 2 (\texttt{PINMODE2}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.00MODE} & Control de \texttt{P1.0}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.01MODE} & Control de \texttt{P1.1}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:4} & --- & Reserved. & NA \\
+\hline
+\texttt{9:8} & \texttt{P1.04MODE} & Control de \texttt{P1.4}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:10} & --- & Reserved. & NA \\
+\hline
+\texttt{17:16} & \texttt{P1.08MODE} & Control de \texttt{P1.8}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.09MODE} & Control de \texttt{P1.9}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.10MODE} & Control de \texttt{P1.10}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:22} & --- & Reserved. & NA \\
+\hline
+\texttt{29:28} & \texttt{P1.14MODE} & Control de \texttt{P1.14}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.15MODE} & Control de \texttt{P1.15}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\end{longtable}
+
+\paragraph{Pin Mode select register 3 (\texttt{PINMODE3} - \texttt{0x4002 C04C})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 31 del puerto 1.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 3 (\texttt{PINMODE3}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P1.16MODE[1]} & Control de \texttt{P1.16}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P1.17MODE[1]} & Control de \texttt{P1.17}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P1.18MODE} & Control de \texttt{P1.18}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P1.19MODE} & Control de \texttt{P1.19}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P1.20MODE} & Control de \texttt{P1.20}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P1.21MODE[1]} & Control de \texttt{P1.21}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P1.22MODE} & Control de \texttt{P1.22}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P1.23MODE} & Control de \texttt{P1.23}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P1.24MODE} & Control de \texttt{P1.24}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P1.25MODE} & Control de \texttt{P1.25}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P1.26MODE} & Control de \texttt{P1.26}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P1.27MODE[1]} & Control de \texttt{P1.27}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P1.28MODE} & Control de \texttt{P1.28}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P1.29MODE} & Control de \texttt{P1.29}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{29:28} & \texttt{P1.30MODE} & Control de \texttt{P1.30}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:30} & \texttt{P1.31MODE} & Control de \texttt{P1.31}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Pin Mode select register 4 (\texttt{PINMODE4} - \texttt{0x4002 C050})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 0 a 15 del puerto 2.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 4 (\texttt{PINMODE4}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{1:0} & \texttt{P2.00MODE} & Control de \texttt{P2.0}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{3:2} & \texttt{P2.01MODE} & Control de \texttt{P2.1}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{5:4} & \texttt{P2.02MODE} & Control de \texttt{P2.2}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{7:6} & \texttt{P2.03MODE} & Control de \texttt{P2.3}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{9:8} & \texttt{P2.04MODE} & Control de \texttt{P2.4}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{11:10} & \texttt{P2.05MODE} & Control de \texttt{P2.5}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{13:12} & \texttt{P2.06MODE} & Control de \texttt{P2.6}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{15:14} & \texttt{P2.07MODE} & Control de \texttt{P2.7}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{17:16} & \texttt{P2.08MODE} & Control de \texttt{P2.8}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{19:18} & \texttt{P2.09MODE} & Control de \texttt{P2.9}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P2.10MODE} & Control de \texttt{P2.10}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{23:22} & \texttt{P2.11MODE[1]} & Control de \texttt{P2.11}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{25:24} & \texttt{P2.12MODE[1]} & Control de \texttt{P2.12}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P2.13MODE[1]} & Control de \texttt{P2.13}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Pin Mode select register 7 (\texttt{PINMODE7} - \texttt{0x4002 C05C})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 31 del puerto 3.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 7 (\texttt{PINMODE7}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{17:0} & --- & Reserved. & NA \\
+\hline
+\texttt{19:18} & \texttt{P3.25MODE[1]} & Control de \texttt{P3.25}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{21:20} & \texttt{P3.26MODE[1]} & Control de \texttt{P3.26}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:22} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+\noindent\textit{[1] No disponible en encapsulado de 80 pines.}
+
+\paragraph{Pin Mode select register 9 (\texttt{PINMODE9} - \texttt{0x4002 C064})}
+Configura \textit{pull-up}/\textit{pull-down} para los pines 16 a 31 del puerto 4.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|>{\centering\arraybackslash}p{0.08\textwidth}|}
+\caption{Pin Mode select register 9 (\texttt{PINMODE9}) bit description}\\
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bits} & \textbf{Símbolo} & \textbf{Descripción} & \textbf{Reset} \\
+\hline
+\endhead
+\texttt{23:0} & --- & Reserved. & NA \\
+\hline
+\texttt{25:24} & \texttt{P4.28MODE} & Control de \texttt{P4.28}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{27:26} & \texttt{P4.29MODE} & Control de \texttt{P4.29}; ver \texttt{P0.00MODE}. & \texttt{00} \\
+\hline
+\texttt{31:28} & --- & Reserved. & NA \\
+\hline
+\end{longtable}
+
