@@ -6,11 +6,11 @@
  * Generated linker script file for LPC1769
  * Created from linkscript.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.30
- * MCUXpresso IDE v25.6 [Build 136] [2025-06-27] on 27 mar. 2026 09:30:17
+ * MCUXpresso IDE v25.6 [Build 136] [2025-06-27] on 14 abr. 2026 13:44:17
  */
 
-INCLUDE "clase_26-3_Debug_library.ld"
-INCLUDE "clase_26-3_Debug_memory.ld"
+INCLUDE "ADCPrueba_Debug_library.ld"
+INCLUDE "ADCPrueba_Debug_memory.ld"
 
 ENTRY(ResetISR)
 
